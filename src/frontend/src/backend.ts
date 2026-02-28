@@ -122,6 +122,7 @@ export interface backendInterface {
     addEmployee(name: string, aadhaarNumber: string, photo: string, designation: string, workName: string, workSite: string, employmentStatus: string, email: string): Promise<bigint>;
     deleteAdminUser(id: bigint): Promise<void>;
     deleteDocument(documentId: bigint): Promise<void>;
+    deleteEmployee(employeeId: bigint): Promise<void>;
     getAdminUsers(): Promise<Array<AdminUser>>;
     getDocuments(): Promise<Array<Document>>;
     getDocumentsByEmployee(employeeId: bigint): Promise<Array<Document>>;
@@ -129,6 +130,7 @@ export interface backendInterface {
     init(): Promise<void>;
     login(email: string, phone: string, password: string): Promise<boolean>;
     updateDocumentStatus(documentId: bigint, status: string): Promise<void>;
+    updateEmployee(employeeId: bigint, name: string, aadhaarNumber: string, photo: string, designation: string, workName: string, workSite: string, employmentStatus: string, email: string): Promise<void>;
     updateEmployeeStatus(employeeId: bigint, status: string): Promise<void>;
 }
 export class Backend implements backendInterface {
@@ -200,6 +202,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.deleteDocument(arg0);
+            return result;
+        }
+    }
+    async deleteEmployee(arg0: bigint): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.deleteEmployee(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.deleteEmployee(arg0);
             return result;
         }
     }
@@ -298,6 +314,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.updateDocumentStatus(arg0, arg1);
+            return result;
+        }
+    }
+    async updateEmployee(arg0: bigint, arg1: string, arg2: string, arg3: string, arg4: string, arg5: string, arg6: string, arg7: string, arg8: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateEmployee(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateEmployee(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
             return result;
         }
     }

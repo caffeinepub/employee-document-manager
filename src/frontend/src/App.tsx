@@ -4,9 +4,11 @@ import {
   useAddDocument,
   useAddEmployee,
   useDeleteDocument,
+  useDeleteEmployee,
   useDocuments,
   useEmployees,
   useUpdateDocumentStatus,
+  useUpdateEmployee,
   useUpdateEmployeeStatus,
 } from "@/hooks/useQueries";
 import type { Document, Employee } from "@/hooks/useQueries";
@@ -38,6 +40,8 @@ export default function App() {
   const updateStatusMutation = useUpdateDocumentStatus();
   const addEmployeeMutation = useAddEmployee();
   const updateEmployeeStatusMutation = useUpdateEmployeeStatus();
+  const updateEmployeeMutation = useUpdateEmployee();
+  const deleteEmployeeMutation = useDeleteEmployee();
 
   const backendEmployees = employeesQuery.data ?? [];
   const backendDocuments = documentsQuery.data ?? [];
@@ -116,6 +120,47 @@ export default function App() {
       }
     },
     [updateEmployeeStatusMutation, employeesQuery],
+  );
+
+  const handleUpdateEmployee = useCallback(
+    async (employeeId: bigint, data: Omit<Employee, "id">) => {
+      const prevEmployees = localEmployees;
+      setLocalEmployees((employees) =>
+        employees.map((e) => (e.id === employeeId ? { ...e, ...data } : e)),
+      );
+      try {
+        await updateEmployeeMutation.mutateAsync({ employeeId, ...data });
+        toast.success(`${data.name} updated successfully`);
+      } catch {
+        setLocalEmployees(prevEmployees);
+        toast.error("Failed to update employee");
+        throw new Error("Update employee failed");
+      }
+    },
+    [updateEmployeeMutation, localEmployees],
+  );
+
+  const handleDeleteEmployee = useCallback(
+    async (employeeId: bigint) => {
+      const prevEmployees = localEmployees;
+      const prevDocuments = localDocuments;
+      setLocalEmployees((employees) =>
+        employees.filter((e) => e.id !== employeeId),
+      );
+      setLocalDocuments((docs) =>
+        docs.filter((d) => d.employeeId !== employeeId),
+      );
+      try {
+        await deleteEmployeeMutation.mutateAsync(employeeId);
+        toast.success("Employee deleted");
+      } catch {
+        setLocalEmployees(prevEmployees);
+        setLocalDocuments(prevDocuments);
+        toast.error("Failed to delete employee");
+        throw new Error("Delete employee failed");
+      }
+    },
+    [deleteEmployeeMutation, localEmployees, localDocuments],
   );
 
   const handleUpload = useCallback(
@@ -249,6 +294,8 @@ export default function App() {
                 onAddEmployee={handleAddEmployee}
                 onToggleEmployeeStatus={handleToggleEmployeeStatus}
                 onDeleteDocument={handleDelete}
+                onEditEmployee={handleUpdateEmployee}
+                onDeleteEmployee={handleDeleteEmployee}
               />
             )}
             {currentPage === "documents" && (

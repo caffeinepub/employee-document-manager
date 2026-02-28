@@ -133,3 +133,52 @@ export function useUpdateDocumentStatus() {
     },
   });
 }
+
+export function useUpdateEmployee() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: {
+      employeeId: bigint;
+      name: string;
+      aadhaarNumber: string;
+      photo: string;
+      designation: string;
+      workName: string;
+      workSite: string;
+      employmentStatus: string;
+      email: string;
+    }) => {
+      if (!actor) throw new Error("No actor available");
+      return actor.updateEmployee(
+        params.employeeId,
+        params.name,
+        params.aadhaarNumber,
+        params.photo,
+        params.designation,
+        params.workName,
+        params.workSite,
+        params.employmentStatus,
+        params.email,
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+    },
+  });
+}
+
+export function useDeleteEmployee() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (employeeId: bigint) => {
+      if (!actor) throw new Error("No actor available");
+      return actor.deleteEmployee(employeeId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
+    },
+  });
+}

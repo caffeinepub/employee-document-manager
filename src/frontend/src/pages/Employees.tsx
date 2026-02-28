@@ -1,4 +1,5 @@
 import { AddEmployeeModal } from "@/components/AddEmployeeModal";
+import { EditEmployeeModal } from "@/components/EditEmployeeModal";
 import { EmployeeDetailSheet } from "@/components/EmployeeDetailSheet";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -32,6 +33,11 @@ interface EmployeesProps {
     newStatus: string,
   ) => Promise<void>;
   onDeleteDocument: (docId: bigint) => Promise<void>;
+  onEditEmployee: (
+    employeeId: bigint,
+    data: Omit<Employee, "id">,
+  ) => Promise<void>;
+  onDeleteEmployee: (employeeId: bigint) => Promise<void>;
 }
 
 type StatusFilter = "All" | "Working" | "Left";
@@ -44,6 +50,8 @@ export function Employees({
   onAddEmployee,
   onToggleEmployeeStatus,
   onDeleteDocument,
+  onEditEmployee,
+  onDeleteEmployee,
 }: EmployeesProps) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
@@ -52,6 +60,7 @@ export function Employees({
     null,
   );
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
 
   // Normalize status: "Active" -> "Working"
   const normalizedEmployees = useMemo(
@@ -357,6 +366,11 @@ export function Employees({
         onViewAllDocs={onViewEmployeeDocs}
         onToggleStatus={onToggleEmployeeStatus}
         onDeleteDocument={onDeleteDocument}
+        onEditEmployee={(emp) => {
+          setSelectedEmployee(null);
+          setEditingEmployee(emp);
+        }}
+        onDeleteEmployee={onDeleteEmployee}
       />
 
       {/* Add Employee Modal */}
@@ -364,6 +378,14 @@ export function Employees({
         open={addModalOpen}
         onClose={() => setAddModalOpen(false)}
         onAddEmployee={onAddEmployee}
+      />
+
+      {/* Edit Employee Modal */}
+      <EditEmployeeModal
+        open={!!editingEmployee}
+        employee={editingEmployee}
+        onClose={() => setEditingEmployee(null)}
+        onUpdateEmployee={onEditEmployee}
       />
     </div>
   );

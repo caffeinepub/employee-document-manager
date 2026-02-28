@@ -1,12 +1,10 @@
+import Runtime "mo:core/Runtime";
 import Order "mo:core/Order";
 import Map "mo:core/Map";
 import Text "mo:core/Text";
 import Nat "mo:core/Nat";
-import Runtime "mo:core/Runtime";
 import List "mo:core/List";
 import Iter "mo:core/Iter";
-
-
 
 actor {
   // Type definitions
@@ -469,10 +467,67 @@ actor {
   };
 
   public shared ({ caller }) func deleteDocument(documentId : Nat) : async () {
-    if (not documents.containsKey(documentId)) {
-      Runtime.trap("Document does not exist");
+    let doc = switch (documents.get(documentId)) {
+      case (null) {
+        Runtime.trap("Document does not exist");
+      };
+      case (?existing) { existing };
     };
+
     documents.remove(documentId);
   };
-};
 
+  // NEW FUNCTION delete employee
+  public shared ({ caller }) func deleteEmployee(employeeId : Nat) : async () {
+    let employee = switch (employees.get(employeeId)) {
+      case (null) {
+        Runtime.trap("Employee does not exist");
+      };
+      case (?existing) { existing };
+    };
+
+    // Remove employee
+    employees.remove(employeeId);
+
+    // Find and remove all associated documents
+    // Collect IDs of documents to remove
+    let docsToRemove = documents.entries().filter(func((id, doc)) { doc.employeeId == employeeId }).toArray();
+    for ((id, doc) in docsToRemove.values()) {
+      documents.remove(id);
+    };
+  };
+
+  // NEW FUNCTION update employee
+  public shared ({ caller }) func updateEmployee(
+    employeeId : Nat,
+    name : Text,
+    aadhaarNumber : Text,
+    photo : Text,
+    designation : Text,
+    workName : Text,
+    workSite : Text,
+    employmentStatus : Text,
+    email : Text,
+  ) : async () {
+    let employee = switch (employees.get(employeeId)) {
+      case (null) {
+        Runtime.trap("Employee does not exist");
+      };
+      case (?existing) { existing };
+    };
+
+    let updatedEmployee : Employee = {
+      id = employeeId;
+      name;
+      aadhaarNumber;
+      photo;
+      designation;
+      workName;
+      workSite;
+      employmentStatus;
+      email;
+    };
+
+    employees.add(employeeId, updatedEmployee);
+  };
+};

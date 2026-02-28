@@ -59,6 +59,7 @@ export const idlService = IDL.Service({
     ),
   'deleteAdminUser' : IDL.Func([IDL.Nat], [], []),
   'deleteDocument' : IDL.Func([IDL.Nat], [], []),
+  'deleteEmployee' : IDL.Func([IDL.Nat], [], []),
   'getAdminUsers' : IDL.Func([], [IDL.Vec(AdminUser)], ['query']),
   'getDocuments' : IDL.Func([], [IDL.Vec(Document)], ['query']),
   'getDocumentsByEmployee' : IDL.Func(
@@ -70,6 +71,21 @@ export const idlService = IDL.Service({
   'init' : IDL.Func([], [], []),
   'login' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Bool], []),
   'updateDocumentStatus' : IDL.Func([IDL.Nat, IDL.Text], [], []),
+  'updateEmployee' : IDL.Func(
+      [
+        IDL.Nat,
+        IDL.Text,
+        IDL.Text,
+        IDL.Text,
+        IDL.Text,
+        IDL.Text,
+        IDL.Text,
+        IDL.Text,
+        IDL.Text,
+      ],
+      [],
+      [],
+    ),
   'updateEmployeeStatus' : IDL.Func([IDL.Nat, IDL.Text], [], []),
 });
 
@@ -127,6 +143,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'deleteAdminUser' : IDL.Func([IDL.Nat], [], []),
     'deleteDocument' : IDL.Func([IDL.Nat], [], []),
+    'deleteEmployee' : IDL.Func([IDL.Nat], [], []),
     'getAdminUsers' : IDL.Func([], [IDL.Vec(AdminUser)], ['query']),
     'getDocuments' : IDL.Func([], [IDL.Vec(Document)], ['query']),
     'getDocumentsByEmployee' : IDL.Func(
@@ -138,6 +155,21 @@ export const idlFactory = ({ IDL }) => {
     'init' : IDL.Func([], [], []),
     'login' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Bool], []),
     'updateDocumentStatus' : IDL.Func([IDL.Nat, IDL.Text], [], []),
+    'updateEmployee' : IDL.Func(
+        [
+          IDL.Nat,
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+        ],
+        [],
+        [],
+      ),
     'updateEmployeeStatus' : IDL.Func([IDL.Nat, IDL.Text], [], []),
   });
 };

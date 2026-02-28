@@ -49,6 +49,7 @@ export interface _SERVICE {
   >,
   'deleteAdminUser' : ActorMethod<[bigint], undefined>,
   'deleteDocument' : ActorMethod<[bigint], undefined>,
+  'deleteEmployee' : ActorMethod<[bigint], undefined>,
   'getAdminUsers' : ActorMethod<[], Array<AdminUser>>,
   'getDocuments' : ActorMethod<[], Array<Document>>,
   'getDocumentsByEmployee' : ActorMethod<[bigint], Array<Document>>,
@@ -56,6 +57,10 @@ export interface _SERVICE {
   'init' : ActorMethod<[], undefined>,
   'login' : ActorMethod<[string, string, string], boolean>,
   'updateDocumentStatus' : ActorMethod<[bigint, string], undefined>,
+  'updateEmployee' : ActorMethod<
+    [bigint, string, string, string, string, string, string, string, string],
+    undefined
+  >,
   'updateEmployeeStatus' : ActorMethod<[bigint, string], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;

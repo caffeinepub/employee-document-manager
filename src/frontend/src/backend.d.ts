@@ -40,6 +40,7 @@ export interface backendInterface {
     addEmployee(name: string, aadhaarNumber: string, photo: string, designation: string, workName: string, workSite: string, employmentStatus: string, email: string): Promise<bigint>;
     deleteAdminUser(id: bigint): Promise<void>;
     deleteDocument(documentId: bigint): Promise<void>;
+    deleteEmployee(employeeId: bigint): Promise<void>;
     getAdminUsers(): Promise<Array<AdminUser>>;
     getDocuments(): Promise<Array<Document>>;
     getDocumentsByEmployee(employeeId: bigint): Promise<Array<Document>>;
@@ -47,5 +48,6 @@ export interface backendInterface {
     init(): Promise<void>;
     login(email: string, phone: string, password: string): Promise<boolean>;
     updateDocumentStatus(documentId: bigint, status: string): Promise<void>;
+    updateEmployee(employeeId: bigint, name: string, aadhaarNumber: string, photo: string, designation: string, workName: string, workSite: string, employmentStatus: string, email: string): Promise<void>;
     updateEmployeeStatus(employeeId: bigint, status: string): Promise<void>;
 }
