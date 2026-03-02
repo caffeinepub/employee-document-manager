@@ -103,15 +103,29 @@ export interface Employee {
     id: bigint;
     workName: string;
     workSite: string;
+    bankAccountDetails: string;
+    ifscCode: string;
+    salaryStructure: string;
+    dateOfBirth: string;
     name: string;
     designation: string;
+    mobileNumber: string;
+    pfNumber: string;
     email: string;
+    dateOfJoining: string;
+    fatherName: string;
+    address: string;
+    gender: string;
+    panNumber: string;
     aadhaarNumber: string;
     photo: string;
+    department: string;
     employmentStatus: string;
+    esiNumber: string;
 }
 export interface AdminUser {
     id: bigint;
+    status: string;
     password: string;
     email: string;
     phone: string;
@@ -119,7 +133,7 @@ export interface AdminUser {
 export interface backendInterface {
     addAdminUser(email: string, phone: string, password: string): Promise<bigint>;
     addDocument(employeeId: bigint, title: string, category: string, status: string, uploadDate: string, expiryDate: string, fileType: string): Promise<bigint>;
-    addEmployee(name: string, aadhaarNumber: string, photo: string, designation: string, workName: string, workSite: string, employmentStatus: string, email: string): Promise<bigint>;
+    addEmployee(name: string, fatherName: string, dateOfBirth: string, gender: string, aadhaarNumber: string, panNumber: string, mobileNumber: string, email: string, address: string, department: string, designation: string, dateOfJoining: string, salaryStructure: string, bankAccountDetails: string, ifscCode: string, pfNumber: string, esiNumber: string, photo: string, workName: string, workSite: string, employmentStatus: string): Promise<bigint>;
     deleteAdminUser(id: bigint): Promise<void>;
     deleteDocument(documentId: bigint): Promise<void>;
     deleteEmployee(employeeId: bigint): Promise<void>;
@@ -128,9 +142,9 @@ export interface backendInterface {
     getDocumentsByEmployee(employeeId: bigint): Promise<Array<Document>>;
     getEmployees(): Promise<Array<Employee>>;
     init(): Promise<void>;
-    login(email: string, phone: string, password: string): Promise<boolean>;
+    login(email: string, password: string): Promise<boolean>;
     updateDocumentStatus(documentId: bigint, status: string): Promise<void>;
-    updateEmployee(employeeId: bigint, name: string, aadhaarNumber: string, photo: string, designation: string, workName: string, workSite: string, employmentStatus: string, email: string): Promise<void>;
+    updateEmployee(employeeId: bigint, name: string, fatherName: string, dateOfBirth: string, gender: string, aadhaarNumber: string, panNumber: string, mobileNumber: string, email: string, address: string, department: string, designation: string, dateOfJoining: string, salaryStructure: string, bankAccountDetails: string, ifscCode: string, pfNumber: string, esiNumber: string, photo: string, workName: string, workSite: string, employmentStatus: string): Promise<void>;
     updateEmployeeStatus(employeeId: bigint, status: string): Promise<void>;
 }
 export class Backend implements backendInterface {
@@ -163,17 +177,17 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async addEmployee(arg0: string, arg1: string, arg2: string, arg3: string, arg4: string, arg5: string, arg6: string, arg7: string): Promise<bigint> {
+    async addEmployee(arg0: string, arg1: string, arg2: string, arg3: string, arg4: string, arg5: string, arg6: string, arg7: string, arg8: string, arg9: string, arg10: string, arg11: string, arg12: string, arg13: string, arg14: string, arg15: string, arg16: string, arg17: string, arg18: string, arg19: string, arg20: string): Promise<bigint> {
         if (this.processError) {
             try {
-                const result = await this.actor.addEmployee(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+                const result = await this.actor.addEmployee(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.addEmployee(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+            const result = await this.actor.addEmployee(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20);
             return result;
         }
     }
@@ -289,17 +303,17 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async login(arg0: string, arg1: string, arg2: string): Promise<boolean> {
+    async login(arg0: string, arg1: string): Promise<boolean> {
         if (this.processError) {
             try {
-                const result = await this.actor.login(arg0, arg1, arg2);
+                const result = await this.actor.login(arg0, arg1);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.login(arg0, arg1, arg2);
+            const result = await this.actor.login(arg0, arg1);
             return result;
         }
     }
@@ -317,17 +331,17 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async updateEmployee(arg0: bigint, arg1: string, arg2: string, arg3: string, arg4: string, arg5: string, arg6: string, arg7: string, arg8: string): Promise<void> {
+    async updateEmployee(arg0: bigint, arg1: string, arg2: string, arg3: string, arg4: string, arg5: string, arg6: string, arg7: string, arg8: string, arg9: string, arg10: string, arg11: string, arg12: string, arg13: string, arg14: string, arg15: string, arg16: string, arg17: string, arg18: string, arg19: string, arg20: string, arg21: string): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.updateEmployee(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+                const result = await this.actor.updateEmployee(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.updateEmployee(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+            const result = await this.actor.updateEmployee(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21);
             return result;
         }
     }

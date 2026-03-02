@@ -34,26 +34,30 @@ export function useAddEmployee() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (params: {
-      name: string;
-      aadhaarNumber: string;
-      photo: string;
-      designation: string;
-      workName: string;
-      workSite: string;
-      employmentStatus: string;
-      email: string;
-    }) => {
+    mutationFn: async (params: Omit<Employee, "id">) => {
       if (!actor) throw new Error("No actor available");
       return actor.addEmployee(
         params.name,
+        params.fatherName,
+        params.dateOfBirth,
+        params.gender,
         params.aadhaarNumber,
-        params.photo,
+        params.panNumber,
+        params.mobileNumber,
+        params.email,
+        params.address,
+        params.department,
         params.designation,
+        params.dateOfJoining,
+        params.salaryStructure,
+        params.bankAccountDetails,
+        params.ifscCode,
+        params.pfNumber,
+        params.esiNumber,
+        params.photo,
         params.workName,
         params.workSite,
         params.employmentStatus,
-        params.email,
       );
     },
     onSuccess: () => {
@@ -138,28 +142,33 @@ export function useUpdateEmployee() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (params: {
-      employeeId: bigint;
-      name: string;
-      aadhaarNumber: string;
-      photo: string;
-      designation: string;
-      workName: string;
-      workSite: string;
-      employmentStatus: string;
-      email: string;
-    }) => {
+    mutationFn: async (
+      params: { employeeId: bigint } & Omit<Employee, "id">,
+    ) => {
       if (!actor) throw new Error("No actor available");
       return actor.updateEmployee(
         params.employeeId,
         params.name,
+        params.fatherName,
+        params.dateOfBirth,
+        params.gender,
         params.aadhaarNumber,
-        params.photo,
+        params.panNumber,
+        params.mobileNumber,
+        params.email,
+        params.address,
+        params.department,
         params.designation,
+        params.dateOfJoining,
+        params.salaryStructure,
+        params.bankAccountDetails,
+        params.ifscCode,
+        params.pfNumber,
+        params.esiNumber,
+        params.photo,
         params.workName,
         params.workSite,
         params.employmentStatus,
-        params.email,
       );
     },
     onSuccess: () => {

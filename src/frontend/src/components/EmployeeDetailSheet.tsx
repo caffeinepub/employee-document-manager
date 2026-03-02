@@ -28,14 +28,23 @@ import {
 } from "@/lib/helpers";
 import {
   ArrowRight,
+  Banknote,
+  Briefcase,
   Building2,
+  Calendar,
+  CreditCard,
   Eye,
   EyeOff,
   FileText,
   Loader2,
+  Mail,
   MapPin,
   Pencil,
+  Phone,
+  Shield,
   Trash2,
+  User,
+  Users,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -48,6 +57,42 @@ interface EmployeeDetailSheetProps {
   onDeleteDocument: (docId: bigint) => Promise<void>;
   onEditEmployee: (emp: Employee) => void;
   onDeleteEmployee: (employeeId: bigint) => Promise<void>;
+}
+
+function InfoRow({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string | React.ReactNode;
+}) {
+  if (!value) return null;
+  return (
+    <div className="flex items-start gap-2.5 py-2">
+      <Icon className="w-3.5 h-3.5 text-slate-400 mt-0.5 flex-shrink-0" />
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 mb-0.5">
+          {label}
+        </p>
+        <p className="text-sm font-medium text-slate-700 break-words">
+          {value}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function SectionDivider({ title }: { title: string }) {
+  return (
+    <div className="flex items-center gap-2 pt-1 pb-0.5">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+        {title}
+      </p>
+      <div className="flex-1 h-px bg-slate-100" />
+    </div>
+  );
 }
 
 export function EmployeeDetailSheet({
@@ -153,11 +198,19 @@ export function EmployeeDetailSheet({
                     <p className="text-slate-300 text-sm mt-0.5">
                       {employee.designation}
                     </p>
+                    {employee.department && (
+                      <p className="text-slate-400 text-xs mt-0.5">
+                        {employee.department}
+                      </p>
+                    )}
                     {employee.email && (
                       <p className="text-slate-400 text-xs mt-0.5 truncate">
                         {employee.email}
                       </p>
                     )}
+                    <p className="text-slate-500 text-xs mt-0.5 font-mono">
+                      EMP-{employee.id.toString()}
+                    </p>
                   </div>
                 </div>
 
@@ -214,9 +267,10 @@ export function EmployeeDetailSheet({
               </div>
 
               {/* Body */}
-              <div className="px-6 py-5 space-y-5">
-                {/* Info grid */}
-                <div className="grid grid-cols-2 gap-3">
+              <div className="px-6 py-5 space-y-1">
+                {/* Work Assignment */}
+                <SectionDivider title="Work Assignment" />
+                <div className="grid grid-cols-2 gap-3 mb-2">
                   <div className="bg-slate-50 rounded-lg p-3">
                     <div className="flex items-center gap-1.5 mb-1">
                       <Building2 className="w-3.5 h-3.5 text-slate-400" />
@@ -244,8 +298,36 @@ export function EmployeeDetailSheet({
                   </div>
                 </div>
 
-                {/* Aadhaar */}
-                <div className="bg-slate-50 rounded-lg p-3">
+                {/* Personal */}
+                <SectionDivider title="Personal" />
+                <div className="divide-y divide-slate-50">
+                  {employee.fatherName && (
+                    <InfoRow
+                      icon={User}
+                      label="Father Name"
+                      value={employee.fatherName}
+                    />
+                  )}
+                  {employee.dateOfBirth && (
+                    <InfoRow
+                      icon={Calendar}
+                      label="Date of Birth"
+                      value={employee.dateOfBirth}
+                    />
+                  )}
+                  {employee.gender && (
+                    <InfoRow
+                      icon={Users}
+                      label="Gender"
+                      value={employee.gender}
+                    />
+                  )}
+                </div>
+
+                {/* Identity */}
+                <SectionDivider title="Identity" />
+                {/* Aadhaar with mask/reveal */}
+                <div className="bg-slate-50 rounded-lg p-3 my-2">
                   <div className="flex items-center justify-between mb-1">
                     <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">
                       Aadhaar Number
@@ -269,9 +351,124 @@ export function EmployeeDetailSheet({
                       : maskAadhaar(employee.aadhaarNumber)}
                   </p>
                 </div>
+                {employee.panNumber && (
+                  <div className="divide-y divide-slate-50">
+                    <InfoRow
+                      icon={CreditCard}
+                      label="PAN Number"
+                      value={employee.panNumber}
+                    />
+                  </div>
+                )}
+
+                {/* Contact */}
+                <SectionDivider title="Contact" />
+                <div className="divide-y divide-slate-50">
+                  {employee.mobileNumber && (
+                    <InfoRow
+                      icon={Phone}
+                      label="Mobile Number"
+                      value={employee.mobileNumber}
+                    />
+                  )}
+                  {employee.email && (
+                    <InfoRow icon={Mail} label="Email" value={employee.email} />
+                  )}
+                  {employee.address && (
+                    <InfoRow
+                      icon={MapPin}
+                      label="Address"
+                      value={employee.address}
+                    />
+                  )}
+                </div>
+
+                {/* Employment */}
+                <SectionDivider title="Employment" />
+                <div className="divide-y divide-slate-50">
+                  {employee.department && (
+                    <InfoRow
+                      icon={Briefcase}
+                      label="Department"
+                      value={employee.department}
+                    />
+                  )}
+                  {employee.dateOfJoining && (
+                    <InfoRow
+                      icon={Calendar}
+                      label="Date of Joining"
+                      value={employee.dateOfJoining}
+                    />
+                  )}
+                  {employee.salaryStructure && (
+                    <InfoRow
+                      icon={Banknote}
+                      label="Salary Structure"
+                      value={employee.salaryStructure}
+                    />
+                  )}
+                  <InfoRow
+                    icon={Shield}
+                    label="Employment Status"
+                    value={
+                      <span
+                        className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${
+                          isWorking
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${isWorking ? "bg-emerald-500" : "bg-slate-400"}`}
+                        />
+                        {isWorking ? "Working" : "Left"}
+                      </span>
+                    }
+                  />
+                </div>
+
+                {/* Financial */}
+                {(employee.bankAccountDetails ||
+                  employee.ifscCode ||
+                  employee.pfNumber ||
+                  employee.esiNumber) && (
+                  <>
+                    <SectionDivider title="Financial" />
+                    <div className="divide-y divide-slate-50">
+                      {employee.bankAccountDetails && (
+                        <InfoRow
+                          icon={Banknote}
+                          label="Bank Account"
+                          value={employee.bankAccountDetails}
+                        />
+                      )}
+                      {employee.ifscCode && (
+                        <InfoRow
+                          icon={CreditCard}
+                          label="IFSC Code"
+                          value={employee.ifscCode}
+                        />
+                      )}
+                      {employee.pfNumber && (
+                        <InfoRow
+                          icon={Shield}
+                          label="PF Number"
+                          value={employee.pfNumber}
+                        />
+                      )}
+                      {employee.esiNumber && (
+                        <InfoRow
+                          icon={Shield}
+                          label="ESI Number"
+                          value={employee.esiNumber}
+                        />
+                      )}
+                    </div>
+                  </>
+                )}
 
                 {/* Documents section */}
-                <div>
+                <div className="pt-3">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <FileText className="w-4 h-4 text-slate-400" />

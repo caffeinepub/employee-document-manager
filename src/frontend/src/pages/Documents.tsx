@@ -330,14 +330,15 @@ export function Documents({
                         className="py-3 text-right"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <div className="flex items-center justify-end gap-1">
+                        <div className="flex items-center justify-end gap-1.5">
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
-                            className="h-7 w-7 p-0 text-slate-400 hover:text-blue-600"
+                            className="h-7 px-2.5 text-xs text-blue-600 border-blue-200 hover:bg-blue-50 hover:border-blue-400 flex items-center gap-1.5"
                             onClick={() => setSelectedDoc(doc)}
                           >
-                            <Eye className="w-3.5 h-3.5" />
+                            <Eye className="w-3 h-3" />
+                            View
                           </Button>
                           <Button
                             variant="ghost"
@@ -420,6 +421,32 @@ export function Documents({
                       </p>
                     </div>
                   )}
+
+                  <div className="mt-3 pt-3 border-t border-border flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-8 text-xs text-blue-600 border-blue-200 hover:bg-blue-50 hover:border-blue-400 flex items-center justify-center gap-1.5"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedDoc(doc);
+                      }}
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      View
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600 flex-shrink-0"
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        await onDelete(doc.id);
+                      }}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             );

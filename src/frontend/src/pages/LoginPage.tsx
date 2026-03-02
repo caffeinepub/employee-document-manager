@@ -48,13 +48,15 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       setError("Email address is required.");
       return;
     }
-    if (!phone.trim()) {
-      setError("Phone number is required.");
-      return;
-    }
-    if (!/^\d{10}$/.test(phone.trim())) {
-      setError("Phone number must be exactly 10 digits.");
-      return;
+    if (mode === "signup") {
+      if (!phone.trim()) {
+        setError("Phone number is required.");
+        return;
+      }
+      if (!/^\d{10}$/.test(phone.trim())) {
+        setError("Phone number must be exactly 10 digits.");
+        return;
+      }
     }
     if (!password) {
       setPasswordError("Password is required.");
@@ -78,13 +80,8 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       if (mode === "signup") {
         // Register new user then auto-login
         await actor.addAdminUser(email.trim(), phone.trim(), password);
-        const success = await actor.login(email.trim(), phone.trim(), password);
+        const success = await actor.login(email.trim(), password);
         if (success) {
-          try {
-            await actor.init();
-          } catch {
-            // init may fail if already initialised — that's fine
-          }
           sessionStorage.setItem("isLoggedIn", "true");
           sessionStorage.setItem("loginEmail", email.trim());
           onLogin();
@@ -93,20 +90,13 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         }
       } else {
         // Existing login flow
-        const success = await actor.login(email.trim(), phone.trim(), password);
+        const success = await actor.login(email.trim(), password);
         if (success) {
-          try {
-            await actor.init();
-          } catch {
-            // init may fail if already initialised — that's fine
-          }
           sessionStorage.setItem("isLoggedIn", "true");
           sessionStorage.setItem("loginEmail", email.trim());
           onLogin();
         } else {
-          setError(
-            "Invalid email or phone number. Please check your credentials.",
-          );
+          setError("Invalid email or password. Please check your credentials.");
         }
       }
     } catch {
@@ -252,7 +242,9 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                   type="email"
                   autoComplete="email"
                   placeholder={
-                    mode === "login" ? "admin@example.com" : "you@company.com"
+                    mode === "login"
+                      ? "gokul.blackcatsolution@gmail.com"
+                      : "you@company.com"
                   }
                   value={email}
                   onChange={(e) => {
@@ -269,35 +261,39 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <Label
-                  htmlFor="phone"
-                  className="text-sm font-medium flex items-center gap-2"
-                  style={{ color: "oklch(var(--sidebar-foreground) / 0.8)" }}
-                >
-                  <Phone className="w-3.5 h-3.5" />
-                  Phone Number
-                </Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  autoComplete="tel"
-                  placeholder="9999999999"
-                  value={phone}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, "").slice(0, 10);
-                    setPhone(val);
-                    setError(null);
-                  }}
-                  disabled={isLoading}
-                  className="h-11"
-                  style={{
-                    background: "oklch(1 0 0 / 0.08)",
-                    borderColor: "oklch(var(--sidebar-border))",
-                    color: "oklch(var(--sidebar-foreground))",
-                  }}
-                />
-              </div>
+              {mode === "signup" && (
+                <div className="space-y-1.5">
+                  <Label
+                    htmlFor="phone"
+                    className="text-sm font-medium flex items-center gap-2"
+                    style={{ color: "oklch(var(--sidebar-foreground) / 0.8)" }}
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    Phone Number
+                  </Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    autoComplete="tel"
+                    placeholder="9999999999"
+                    value={phone}
+                    onChange={(e) => {
+                      const val = e.target.value
+                        .replace(/\D/g, "")
+                        .slice(0, 10);
+                      setPhone(val);
+                      setError(null);
+                    }}
+                    disabled={isLoading}
+                    className="h-11"
+                    style={{
+                      background: "oklch(1 0 0 / 0.08)",
+                      borderColor: "oklch(var(--sidebar-border))",
+                      color: "oklch(var(--sidebar-foreground))",
+                    }}
+                  />
+                </div>
+              )}
 
               <div className="space-y-1.5">
                 <Label
@@ -468,26 +464,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                         className="font-mono font-semibold"
                         style={{ color: "oklch(var(--sidebar-primary))" }}
                       >
-                        admin@example.com
-                      </code>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs">
-                      <Phone
-                        className="w-3 h-3 opacity-60"
-                        style={{ color: "oklch(var(--sidebar-primary))" }}
-                      />
-                      <span
-                        style={{
-                          color: "oklch(var(--sidebar-foreground) / 0.7)",
-                        }}
-                      >
-                        Phone:
-                      </span>
-                      <code
-                        className="font-mono font-semibold"
-                        style={{ color: "oklch(var(--sidebar-primary))" }}
-                      >
-                        9999999999
+                        gokul.blackcatsolution@gmail.com
                       </code>
                     </div>
                     <div className="flex items-center gap-2 text-xs">
