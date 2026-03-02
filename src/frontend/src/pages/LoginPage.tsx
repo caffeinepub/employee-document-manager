@@ -14,7 +14,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 
 interface LoginPageProps {
-  onLogin: () => void;
+  onLogin: (email: string) => void;
 }
 
 type Mode = "login" | "signup";
@@ -77,24 +77,25 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
     setIsLoading(true);
     try {
+      const normalizedEmail = email.trim().toLowerCase();
       if (mode === "signup") {
         // Register new user then auto-login
-        await actor.addAdminUser(email.trim(), phone.trim(), password);
-        const success = await actor.login(email.trim(), password);
+        await actor.addAdminUser(normalizedEmail, phone.trim(), password);
+        const success = await actor.login(normalizedEmail, password);
         if (success) {
           sessionStorage.setItem("isLoggedIn", "true");
-          sessionStorage.setItem("loginEmail", email.trim());
-          onLogin();
+          sessionStorage.setItem("loginEmail", normalizedEmail);
+          onLogin(normalizedEmail);
         } else {
           setError("Account created but login failed. Please try signing in.");
         }
       } else {
         // Existing login flow
-        const success = await actor.login(email.trim(), password);
+        const success = await actor.login(normalizedEmail, password);
         if (success) {
           sessionStorage.setItem("isLoggedIn", "true");
-          sessionStorage.setItem("loginEmail", email.trim());
-          onLogin();
+          sessionStorage.setItem("loginEmail", normalizedEmail);
+          onLogin(normalizedEmail);
         } else {
           setError("Invalid email or password. Please check your credentials.");
         }

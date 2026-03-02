@@ -172,3 +172,12 @@ export function getNextStatus(current: string): string {
 export function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
+
+export function getDesignationColor(designation: string): string {
+  const d = designation.toLowerCase();
+  if (d === "manager") return "bg-blue-100 text-blue-700";
+  if (d === "supervisor") return "bg-green-100 text-green-700";
+  if (d === "staff") return "bg-orange-100 text-orange-700";
+  if (d === "security") return "bg-red-100 text-red-700";
+  return "bg-slate-100 text-slate-600";
+}

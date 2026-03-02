@@ -22,6 +22,7 @@ import {
 } from "@/lib/helpers";
 import {
   Calendar,
+  Download,
   Eye,
   File,
   FileCode,
@@ -47,18 +48,50 @@ interface DocumentModalProps {
   onDelete: (docId: bigint) => Promise<void>;
 }
 
-function DocumentPreview({ fileType }: { fileType: string }) {
+function SmartDocumentPreview({
+  fileType,
+  fileUrl,
+}: {
+  fileType: string;
+  fileUrl: string;
+}) {
   const lower = fileType?.toLowerCase() ?? "";
+  const hasFile = fileUrl && fileUrl.length > 0;
+
+  // Actual image preview
+  if (
+    hasFile &&
+    (lower === "img" || lower === "jpg" || lower === "jpeg" || lower === "png")
+  ) {
+    return (
+      <img
+        src={fileUrl}
+        alt="Document preview"
+        className="w-full h-44 object-contain rounded-lg border border-slate-200"
+      />
+    );
+  }
+
+  // Actual PDF preview
+  if (hasFile && lower === "pdf") {
+    return (
+      <iframe
+        src={fileUrl}
+        title="PDF Preview"
+        className="w-full h-44 rounded-lg border border-slate-200"
+      />
+    );
+  }
+
+  // Decorative placeholders when no file or doc type
 
   if (lower === "pdf") {
     return (
       <div className="relative w-full h-44 bg-white rounded-lg border border-slate-200 shadow-inner overflow-hidden flex flex-col">
-        {/* PDF Header Bar */}
         <div className="bg-red-600 text-white text-xs font-bold px-3 py-1.5 flex items-center gap-2">
           <FileText className="w-3.5 h-3.5" />
           <span>PDF Document</span>
         </div>
-        {/* Mock PDF Content */}
         <div className="flex-1 p-4 bg-slate-50 space-y-2.5">
           <div className="h-3 bg-slate-300 rounded w-3/4" />
           <div className="h-2.5 bg-slate-200 rounded w-full" />
@@ -79,7 +112,6 @@ function DocumentPreview({ fileType }: { fileType: string }) {
             </div>
           </div>
         </div>
-        {/* PDF Badge */}
         <div className="absolute bottom-2 right-2 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
           PDF
         </div>
@@ -90,12 +122,10 @@ function DocumentPreview({ fileType }: { fileType: string }) {
   if (lower === "doc" || lower === "docx") {
     return (
       <div className="relative w-full h-44 bg-white rounded-lg border border-slate-200 shadow-inner overflow-hidden flex flex-col">
-        {/* DOC Header Bar */}
         <div className="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 flex items-center gap-2">
           <FileCode className="w-3.5 h-3.5" />
           <span>Word Document</span>
         </div>
-        {/* Mock DOC Content */}
         <div className="flex-1 p-4 bg-white space-y-2.5">
           <div className="h-4 bg-blue-100 rounded w-1/2" />
           <div className="h-2.5 bg-slate-100 rounded w-full" />
@@ -106,7 +136,6 @@ function DocumentPreview({ fileType }: { fileType: string }) {
           <div className="h-2.5 bg-slate-100 rounded w-3/4" />
           <div className="h-2.5 bg-slate-100 rounded w-full" />
         </div>
-        {/* DOC Badge */}
         <div className="absolute bottom-2 right-2 bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
           {lower.toUpperCase()}
         </div>
@@ -122,7 +151,6 @@ function DocumentPreview({ fileType }: { fileType: string }) {
   ) {
     return (
       <div className="relative w-full h-44 bg-gradient-to-br from-emerald-50 to-teal-100 rounded-lg border border-slate-200 shadow-inner overflow-hidden flex items-center justify-center">
-        {/* Mock Image Grid */}
         <div className="absolute inset-0 opacity-20 grid grid-cols-4 grid-rows-3 gap-px bg-emerald-200">
           <div className="bg-emerald-400" style={{ opacity: 0.3 }} />
           <div className="bg-emerald-400" style={{ opacity: 0.45 }} />
@@ -141,7 +169,6 @@ function DocumentPreview({ fileType }: { fileType: string }) {
           <Image className="w-12 h-12 opacity-60" />
           <span className="text-xs font-medium opacity-70">Image File</span>
         </div>
-        {/* IMG Badge */}
         <div className="absolute bottom-2 right-2 bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
           {lower.toUpperCase()}
         </div>
@@ -205,12 +232,26 @@ export function DocumentModal({
   }
 
   function handleViewDocument() {
-    toast.info(
-      "Document preview is not available for uploaded files stored in the system.",
-      {
-        duration: 4000,
-      },
-    );
+    if (!doc) return;
+    const hasFile = doc.fileUrl && doc.fileUrl.length > 0;
+    if (!hasFile) {
+      toast.error("No file available for this document. Please re-upload.");
+      return;
+    }
+    window.open(doc.fileUrl, "_blank");
+  }
+
+  function handleDownloadDocument() {
+    if (!doc) return;
+    const hasFile = doc.fileUrl && doc.fileUrl.length > 0;
+    if (!hasFile) {
+      toast.error("No file available to download. Please re-upload.");
+      return;
+    }
+    const a = document.createElement("a");
+    a.href = doc.fileUrl;
+    a.download = doc.title || "document";
+    a.click();
   }
 
   if (!doc) return null;
@@ -259,13 +300,18 @@ export function DocumentModal({
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
                 Document Preview
               </p>
-              <DocumentPreview fileType={doc.fileType} />
-              <div className="flex items-center gap-1.5 justify-center mt-1">
-                <Lock className="w-3 h-3 text-slate-400" />
-                <p className="text-xs text-slate-400 text-center">
-                  Preview not available — file stored securely
-                </p>
-              </div>
+              <SmartDocumentPreview
+                fileType={doc.fileType}
+                fileUrl={doc.fileUrl ?? ""}
+              />
+              {!(doc.fileUrl && doc.fileUrl.length > 0) && (
+                <div className="flex items-center gap-1.5 justify-center mt-1">
+                  <Lock className="w-3 h-3 text-slate-400" />
+                  <p className="text-xs text-slate-400 text-center">
+                    Preview not available — file stored securely
+                  </p>
+                </div>
+              )}
 
               {/* View Document Button */}
               <Button
@@ -275,6 +321,23 @@ export function DocumentModal({
               >
                 <Eye className="w-4 h-4" />
                 View Document
+              </Button>
+
+              {/* Download Document Button */}
+              <Button
+                variant="outline"
+                className={`w-full flex items-center gap-2 transition-colors ${
+                  doc.fileUrl && doc.fileUrl.length > 0
+                    ? "text-emerald-600 border-emerald-200 hover:bg-emerald-50 hover:border-emerald-400"
+                    : "text-slate-400 border-slate-200 cursor-not-allowed opacity-60"
+                }`}
+                onClick={handleDownloadDocument}
+                disabled={!(doc.fileUrl && doc.fileUrl.length > 0)}
+              >
+                <Download className="w-4 h-4" />
+                {doc.fileUrl && doc.fileUrl.length > 0
+                  ? "Download Document"
+                  : "No file to download"}
               </Button>
             </div>
 

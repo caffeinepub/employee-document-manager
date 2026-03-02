@@ -24,10 +24,18 @@ import { toast } from "sonner";
 
 type Page = "dashboard" | "employees" | "documents" | "upload" | "users";
 
+/** Read auth state from sessionStorage on first render */
+function readAuthState(): { isLoggedIn: boolean; email: string } {
+  const isLoggedIn = sessionStorage.getItem("isLoggedIn") === "true";
+  const email = sessionStorage.getItem("loginEmail") ?? "";
+  return { isLoggedIn, email };
+}
+
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    () => sessionStorage.getItem("isLoggedIn") === "true",
-  );
+  const initial = readAuthState();
+  const [isLoggedIn, setIsLoggedIn] = useState(initial.isLoggedIn);
+  const [currentEmail, setCurrentEmail] = useState(initial.email);
+
   const [currentPage, setCurrentPage] = useState<Page>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filterEmployeeId, setFilterEmployeeId] = useState<bigint | null>(null);
@@ -75,6 +83,24 @@ export default function App() {
   const handleViewEmployeeDocs = useCallback((employeeId: bigint) => {
     setFilterEmployeeId(employeeId);
     setCurrentPage("documents");
+  }, []);
+
+  /** Called by LoginPage after successful authentication */
+  const handleLogin = useCallback((email: string) => {
+    setCurrentEmail(email);
+    setIsLoggedIn(true);
+  }, []);
+
+  /** Full sign-out: clear all auth from both storages */
+  const handleLogout = useCallback(() => {
+    sessionStorage.removeItem("isLoggedIn");
+    sessionStorage.removeItem("loginEmail");
+    // Do NOT clear localStorage profile entries -- they persist per-account
+    setCurrentEmail("");
+    setIsLoggedIn(false);
+    // Reset page state so next login starts fresh
+    setCurrentPage("dashboard");
+    setFilterEmployeeId(null);
   }, []);
 
   const handleAddEmployee = useCallback(
@@ -172,6 +198,7 @@ export default function App() {
       uploadDate: string;
       expiryDate: string;
       fileType: string;
+      fileUrl: string;
     }) => {
       // Optimistic update
       const tempId = BigInt(Date.now());
@@ -184,6 +211,7 @@ export default function App() {
         uploadDate: params.uploadDate,
         expiryDate: params.expiryDate,
         fileType: params.fileType,
+        fileUrl: params.fileUrl,
       };
       setLocalDocuments((prev) => [...prev, newDoc]);
 
@@ -242,7 +270,7 @@ export default function App() {
   if (!isLoggedIn) {
     return (
       <>
-        <LoginPage onLogin={() => setIsLoggedIn(true)} />
+        <LoginPage onLogin={handleLogin} />
         <Toaster position="top-right" richColors />
       </>
     );
@@ -255,7 +283,8 @@ export default function App() {
         onNavigate={handleNavigate}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
-        onLogout={() => setIsLoggedIn(false)}
+        onLogout={handleLogout}
+        loginEmail={currentEmail}
       />
 
       {/* Main Content */}

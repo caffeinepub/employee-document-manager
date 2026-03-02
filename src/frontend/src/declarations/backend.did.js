@@ -24,6 +24,7 @@ export const Document = IDL.Record({
   'employeeId' : IDL.Nat,
   'category' : IDL.Text,
   'uploadDate' : IDL.Text,
+  'fileUrl' : IDL.Text,
 });
 export const Employee = IDL.Record({
   'id' : IDL.Nat,
@@ -53,7 +54,16 @@ export const Employee = IDL.Record({
 export const idlService = IDL.Service({
   'addAdminUser' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Nat], []),
   'addDocument' : IDL.Func(
-      [IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [
+        IDL.Nat,
+        IDL.Text,
+        IDL.Text,
+        IDL.Text,
+        IDL.Text,
+        IDL.Text,
+        IDL.Text,
+        IDL.Text,
+      ],
       [IDL.Nat],
       [],
     ),
@@ -148,6 +158,7 @@ export const idlFactory = ({ IDL }) => {
     'employeeId' : IDL.Nat,
     'category' : IDL.Text,
     'uploadDate' : IDL.Text,
+    'fileUrl' : IDL.Text,
   });
   const Employee = IDL.Record({
     'id' : IDL.Nat,
@@ -177,7 +188,16 @@ export const idlFactory = ({ IDL }) => {
   return IDL.Service({
     'addAdminUser' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Nat], []),
     'addDocument' : IDL.Func(
-        [IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [
+          IDL.Nat,
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+        ],
         [IDL.Nat],
         [],
       ),

@@ -33,6 +33,7 @@ interface UploadProps {
     uploadDate: string;
     expiryDate: string;
     fileType: string;
+    fileUrl: string;
   }) => Promise<void>;
 }
 
@@ -57,6 +58,7 @@ export function Upload({ employees, isLoading, onUpload }: UploadProps) {
   const [errors, setErrors] = useState<Partial<FormState>>({});
   const [isDragging, setIsDragging] = useState(false);
   const [simulatedFile, setSimulatedFile] = useState<string | null>(null);
+  const [fileDataUrl, setFileDataUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -81,6 +83,12 @@ export function Upload({ employees, isLoading, onUpload }: UploadProps) {
     if (!form.title && file.name) {
       setForm((f) => ({ ...f, title: file.name.replace(/\.[^.]+$/, "") }));
     }
+    // Read file as base64 data URL
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setFileDataUrl((e.target?.result as string) ?? null);
+    };
+    reader.readAsDataURL(file);
   }
 
   function handleDragOver(e: React.DragEvent) {
@@ -115,12 +123,14 @@ export function Upload({ employees, isLoading, onUpload }: UploadProps) {
         uploadDate: todayISO(),
         expiryDate: form.expiryDate,
         fileType: form.fileType,
+        fileUrl: fileDataUrl ?? "",
       });
       toast.success("Document uploaded successfully!", {
         description: `"${form.title}" has been added and is pending review.`,
       });
       setForm(INITIAL_FORM);
       setSimulatedFile(null);
+      setFileDataUrl(null);
       setErrors({});
     } catch {
       toast.error("Failed to upload document", {
@@ -190,15 +200,14 @@ export function Upload({ employees, isLoading, onUpload }: UploadProps) {
                         onClick={(e) => {
                           e.stopPropagation();
                           setSimulatedFile(null);
+                          setFileDataUrl(null);
                         }}
                         className="ml-1 text-slate-400 hover:text-slate-600"
                       >
                         <X className="w-3 h-3" />
                       </button>
                     </div>
-                    <p className="text-xs text-emerald-600">
-                      File ready (simulated)
-                    </p>
+                    <p className="text-xs text-emerald-600">File ready</p>
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -405,6 +414,7 @@ export function Upload({ employees, isLoading, onUpload }: UploadProps) {
                 onClick={() => {
                   setForm(INITIAL_FORM);
                   setSimulatedFile(null);
+                  setFileDataUrl(null);
                   setErrors({});
                 }}
               >

@@ -254,6 +254,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "img",
     uploadDate: "2024-01-15",
     expiryDate: "",
+    fileUrl: "",
   },
   {
     id: 102n,
@@ -264,6 +265,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "pdf",
     uploadDate: "2024-01-20",
     expiryDate: "2026-01-20",
+    fileUrl: "",
   },
   {
     id: 103n,
@@ -274,6 +276,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "pdf",
     uploadDate: "2024-01-20",
     expiryDate: "",
+    fileUrl: "",
   },
   {
     id: 104n,
@@ -284,6 +287,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "img",
     uploadDate: "2024-01-10",
     expiryDate: "",
+    fileUrl: "",
   },
 
   // Priya Sharma – Acme Construction
@@ -296,6 +300,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "img",
     uploadDate: "2024-02-05",
     expiryDate: "",
+    fileUrl: "",
   },
   {
     id: 202n,
@@ -306,6 +311,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "pdf",
     uploadDate: "2023-11-01",
     expiryDate: "",
+    fileUrl: "",
   },
   {
     id: 203n,
@@ -316,6 +322,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "pdf",
     uploadDate: "2024-05-20",
     expiryDate: "2027-05-20",
+    fileUrl: "",
   },
   {
     id: 204n,
@@ -326,6 +333,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "pdf",
     uploadDate: "2025-01-31",
     expiryDate: "",
+    fileUrl: "",
   },
 
   // Mohammed Irfan – Bridge Works
@@ -338,6 +346,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "img",
     uploadDate: "2024-03-10",
     expiryDate: "",
+    fileUrl: "",
   },
   {
     id: 302n,
@@ -348,6 +357,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "doc",
     uploadDate: "2022-08-15",
     expiryDate: "2025-08-15",
+    fileUrl: "",
   },
   {
     id: 303n,
@@ -358,6 +368,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "pdf",
     uploadDate: "2023-09-01",
     expiryDate: "2026-09-01",
+    fileUrl: "",
   },
 
   // Anita Desai – Bridge Works
@@ -370,6 +381,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "img",
     uploadDate: "2023-04-20",
     expiryDate: "",
+    fileUrl: "",
   },
   {
     id: 402n,
@@ -380,6 +392,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "pdf",
     uploadDate: "2023-04-01",
     expiryDate: "",
+    fileUrl: "",
   },
   {
     id: 403n,
@@ -390,6 +403,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "pdf",
     uploadDate: "2024-07-15",
     expiryDate: "2027-07-15",
+    fileUrl: "",
   },
 
   // Suresh Nair – Bridge Works
@@ -402,6 +416,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "img",
     uploadDate: "2024-06-01",
     expiryDate: "",
+    fileUrl: "",
   },
   {
     id: 502n,
@@ -412,6 +427,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "pdf",
     uploadDate: "2024-06-15",
     expiryDate: "2026-06-15",
+    fileUrl: "",
   },
   {
     id: 503n,
@@ -422,6 +438,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "pdf",
     uploadDate: "2024-06-01",
     expiryDate: "",
+    fileUrl: "",
   },
   {
     id: 504n,
@@ -432,6 +449,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "pdf",
     uploadDate: "2025-01-31",
     expiryDate: "",
+    fileUrl: "",
   },
 
   // Kavita Reddy – Road Division (Left)
@@ -444,6 +462,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "img",
     uploadDate: "2024-09-01",
     expiryDate: "",
+    fileUrl: "",
   },
   {
     id: 602n,
@@ -454,6 +473,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "pdf",
     uploadDate: "2025-01-05",
     expiryDate: "",
+    fileUrl: "",
   },
 
   // Vikram Singh – Road Division
@@ -466,6 +486,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "img",
     uploadDate: "2023-11-10",
     expiryDate: "",
+    fileUrl: "",
   },
   {
     id: 702n,
@@ -476,6 +497,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "pdf",
     uploadDate: "2023-10-25",
     expiryDate: "",
+    fileUrl: "",
   },
   {
     id: 703n,
@@ -486,6 +508,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "pdf",
     uploadDate: "2024-03-15",
     expiryDate: "2027-03-15",
+    fileUrl: "",
   },
 
   // Deepa Menon – Acme Construction
@@ -498,6 +521,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "img",
     uploadDate: "2024-07-01",
     expiryDate: "",
+    fileUrl: "",
   },
   {
     id: 802n,
@@ -508,6 +532,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "doc",
     uploadDate: "2025-02-18",
     expiryDate: "2027-02-18",
+    fileUrl: "",
   },
   {
     id: 803n,
@@ -518,6 +543,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "pdf",
     uploadDate: "2024-07-05",
     expiryDate: "",
+    fileUrl: "",
   },
 
   // Ravi Pillai – Road Division (Left)
@@ -530,6 +556,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "img",
     uploadDate: "2024-04-10",
     expiryDate: "",
+    fileUrl: "",
   },
   {
     id: 902n,
@@ -540,6 +567,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "pdf",
     uploadDate: "2024-04-01",
     expiryDate: "",
+    fileUrl: "",
   },
   {
     id: 903n,
@@ -550,6 +578,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "pdf",
     uploadDate: "2024-09-10",
     expiryDate: "2025-09-10",
+    fileUrl: "",
   },
 
   // Sneha Joshi – Acme Construction
@@ -562,6 +591,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "img",
     uploadDate: "2023-08-20",
     expiryDate: "",
+    fileUrl: "",
   },
   {
     id: 1002n,
@@ -572,6 +602,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "pdf",
     uploadDate: "2023-08-01",
     expiryDate: "2026-08-01",
+    fileUrl: "",
   },
   {
     id: 1003n,
@@ -582,6 +613,7 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "img",
     uploadDate: "2023-08-01",
     expiryDate: "",
+    fileUrl: "",
   },
   {
     id: 1004n,
@@ -592,5 +624,6 @@ export const SAMPLE_DOCUMENTS: Document[] = [
     fileType: "pdf",
     uploadDate: "2025-01-31",
     expiryDate: "",
+    fileUrl: "",
   },
 ];

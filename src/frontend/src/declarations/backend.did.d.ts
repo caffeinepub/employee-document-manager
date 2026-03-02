@@ -26,6 +26,7 @@ export interface Document {
   'employeeId' : bigint,
   'category' : string,
   'uploadDate' : string,
+  'fileUrl' : string,
 }
 export interface Employee {
   'id' : bigint,
@@ -54,7 +55,7 @@ export interface Employee {
 export interface _SERVICE {
   'addAdminUser' : ActorMethod<[string, string, string], bigint>,
   'addDocument' : ActorMethod<
-    [bigint, string, string, string, string, string, string],
+    [bigint, string, string, string, string, string, string, string],
     bigint
   >,
   'addEmployee' : ActorMethod<

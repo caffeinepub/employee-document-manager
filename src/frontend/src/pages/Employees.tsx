@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { Document, Employee } from "@/hooks/useQueries";
 import {
   getAvatarColor,
+  getDesignationColor,
   getInitials,
   getWorkNameColor,
   normalizeEmploymentStatus,
@@ -108,6 +109,29 @@ export function Employees({
     return [...map.entries()].sort((a, b) => b[1] - a[1]);
   }, [normalizedEmployees]);
 
+  // Sites per work group with employee counts (based on filtered employees when a work group is active)
+  const workNameSites = useMemo(() => {
+    // For counting, use all normalized employees (not filtered by search/status) so counts reflect real totals per work group
+    const siteCountMap = new Map<string, Map<string, number>>();
+    for (const e of normalizedEmployees) {
+      if (!siteCountMap.has(e.workName))
+        siteCountMap.set(e.workName, new Map());
+      const siteMap = siteCountMap.get(e.workName)!;
+      const site = e.workSite || "";
+      siteMap.set(site, (siteMap.get(site) ?? 0) + 1);
+    }
+    // Also collect all sites per work group (including those with 0 employees if needed)
+    const result = new Map<string, { site: string; count: number }[]>();
+    for (const [workName, siteMap] of siteCountMap) {
+      const sites = [...siteMap.entries()]
+        .filter(([site]) => site.trim() !== "")
+        .map(([site, count]) => ({ site, count }))
+        .sort((a, b) => a.site.localeCompare(b.site));
+      result.set(workName, sites);
+    }
+    return result;
+  }, [normalizedEmployees]);
+
   const STATUS_TABS: { label: StatusFilter; count: number }[] = [
     { label: "All", count: normalizedEmployees.length },
     { label: "Working", count: workingCount },
@@ -194,38 +218,61 @@ export function Employees({
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
             Work Groups
           </p>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => setWorkNameFilter(null)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-150 ${
-                workNameFilter === null
-                  ? "bg-slate-800 text-white border-slate-800"
-                  : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"
-              }`}
-            >
-              All Groups
-            </button>
+          <div className="flex flex-wrap gap-3 items-start">
+            <div className="flex flex-col gap-1">
+              <button
+                type="button"
+                onClick={() => setWorkNameFilter(null)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-150 ${
+                  workNameFilter === null
+                    ? "bg-slate-800 text-white border-slate-800"
+                    : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"
+                }`}
+              >
+                All Groups
+              </button>
+            </div>
             {workNameGroups.map(([name, count]) => {
               const colorClass = getWorkNameColor(name);
               const isActive = workNameFilter === name;
+              const sites = workNameSites.get(name) ?? [];
               return (
-                <button
-                  key={name}
-                  type="button"
-                  onClick={() => setWorkNameFilter(isActive ? null : name)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-150 ${
-                    isActive
-                      ? `ring-2 ring-offset-1 ring-slate-400 ${colorClass}`
-                      : `${colorClass} border-transparent hover:border-current/30`
-                  }`}
-                >
-                  <Building2 className="w-3 h-3" />
-                  {name}
-                  <span className="bg-black/10 px-1 py-0.5 rounded text-[10px] font-bold">
-                    {count}
-                  </span>
-                </button>
+                <div key={name} className="flex flex-col gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setWorkNameFilter(isActive ? null : name)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-150 ${
+                      isActive
+                        ? `ring-2 ring-offset-1 ring-slate-400 ${colorClass}`
+                        : `${colorClass} border-transparent hover:border-current/30`
+                    }`}
+                  >
+                    <Building2 className="w-3 h-3" />
+                    {name}
+                    <span className="bg-black/10 px-1 py-0.5 rounded text-[10px] font-bold">
+                      {count}
+                    </span>
+                  </button>
+                  {sites.length > 0 && (
+                    <div className="flex flex-wrap gap-1 pl-1">
+                      <span className="text-[10px] text-slate-400 font-medium self-center">
+                        Under Sites:
+                      </span>
+                      {sites.map(({ site, count }) => (
+                        <span
+                          key={site}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-500 border border-slate-200"
+                        >
+                          <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
+                          {site}
+                          <span className="ml-0.5 px-1 py-0 rounded-full bg-primary/10 text-primary font-bold text-[9px] leading-4 min-w-[16px] text-center">
+                            {count}
+                          </span>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
@@ -318,9 +365,11 @@ export function Employees({
                     <h3 className="font-display font-semibold text-slate-800 leading-tight">
                       {emp.name}
                     </h3>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold mt-1 ${getDesignationColor(emp.designation)}`}
+                    >
                       {emp.designation}
-                    </p>
+                    </span>
                   </div>
 
                   {/* Work name badge */}

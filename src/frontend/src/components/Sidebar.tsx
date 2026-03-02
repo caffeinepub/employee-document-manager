@@ -23,6 +23,7 @@ interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
   onLogout: () => void;
+  loginEmail: string;
 }
 
 const NAV_ITEMS: {
@@ -43,11 +44,21 @@ export function Sidebar({
   isOpen,
   onClose,
   onLogout,
+  loginEmail,
 }: SidebarProps) {
-  const { profile, updateProfile } = useProfile();
+  const { profile, updateProfile } = useProfile(loginEmail);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
 
-  const avatarInitial = profile.name.charAt(0).toUpperCase();
+  const avatarInitial = profile.name.charAt(0).toUpperCase() || "?";
+
+  const handleLogout = () => {
+    // Clear all session and local auth data
+    sessionStorage.removeItem("isLoggedIn");
+    sessionStorage.removeItem("loginEmail");
+    // Remove profile data for this account so a fresh login shows correct state
+    // (keep it if you want profile edits to persist across sessions -- remove to always reset)
+    onLogout();
+  };
 
   return (
     <>
@@ -215,10 +226,7 @@ export function Sidebar({
           </button>
           <button
             type="button"
-            onClick={() => {
-              sessionStorage.removeItem("isLoggedIn");
-              onLogout();
-            }}
+            onClick={handleLogout}
             className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 opacity-60 hover:opacity-100"
             style={{
               color: "oklch(var(--sidebar-foreground))",

@@ -92,6 +92,7 @@ export function useAddDocument() {
       uploadDate: string;
       expiryDate: string;
       fileType: string;
+      fileUrl: string;
     }) => {
       if (!actor) throw new Error("No actor available");
       return actor.addDocument(
@@ -102,6 +103,7 @@ export function useAddDocument() {
         params.uploadDate,
         params.expiryDate,
         params.fileType,
+        params.fileUrl,
       );
     },
     onSuccess: () => {

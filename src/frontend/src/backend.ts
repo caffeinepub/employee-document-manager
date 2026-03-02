@@ -98,6 +98,7 @@ export interface Document {
     employeeId: bigint;
     category: string;
     uploadDate: string;
+    fileUrl: string;
 }
 export interface Employee {
     id: bigint;
@@ -132,7 +133,7 @@ export interface AdminUser {
 }
 export interface backendInterface {
     addAdminUser(email: string, phone: string, password: string): Promise<bigint>;
-    addDocument(employeeId: bigint, title: string, category: string, status: string, uploadDate: string, expiryDate: string, fileType: string): Promise<bigint>;
+    addDocument(employeeId: bigint, title: string, category: string, status: string, uploadDate: string, expiryDate: string, fileType: string, fileUrl: string): Promise<bigint>;
     addEmployee(name: string, fatherName: string, dateOfBirth: string, gender: string, aadhaarNumber: string, panNumber: string, mobileNumber: string, email: string, address: string, department: string, designation: string, dateOfJoining: string, salaryStructure: string, bankAccountDetails: string, ifscCode: string, pfNumber: string, esiNumber: string, photo: string, workName: string, workSite: string, employmentStatus: string): Promise<bigint>;
     deleteAdminUser(id: bigint): Promise<void>;
     deleteDocument(documentId: bigint): Promise<void>;
@@ -163,17 +164,17 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async addDocument(arg0: bigint, arg1: string, arg2: string, arg3: string, arg4: string, arg5: string, arg6: string): Promise<bigint> {
+    async addDocument(arg0: bigint, arg1: string, arg2: string, arg3: string, arg4: string, arg5: string, arg6: string, arg7: string): Promise<bigint> {
         if (this.processError) {
             try {
-                const result = await this.actor.addDocument(arg0, arg1, arg2, arg3, arg4, arg5, arg6);
+                const result = await this.actor.addDocument(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.addDocument(arg0, arg1, arg2, arg3, arg4, arg5, arg6);
+            const result = await this.actor.addDocument(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
             return result;
         }
     }

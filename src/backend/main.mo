@@ -5,9 +5,9 @@ import List "mo:core/List";
 import Iter "mo:core/Iter";
 import Text "mo:core/Text";
 import Runtime "mo:core/Runtime";
-import Migration "migration";
 
-(with migration = Migration.run)
+
+
 actor {
   type Employee = {
     id : Nat;
@@ -43,6 +43,7 @@ actor {
     uploadDate : Text;
     expiryDate : Text;
     fileType : Text;
+    fileUrl : Text;
   };
 
   type AdminUser = {
@@ -79,15 +80,8 @@ actor {
   let documents = Map.empty<Nat, Document>();
   let adminUsers = Map.empty<Nat, AdminUser>();
 
-  system func postupgrade() {
-    // Dummy implementation for compatibility, real migration happens in with clause
-  };
-
-  // Improved init to only seed one default admin user if map is empty
   public shared ({ caller }) func init() : async () {
-    // Only seed if admin users is empty
     switch (adminUsers.values().find(func(user) { user.email == "gokul.blackcatsolution@gmail.com" })) {
-      // user not found, create it
       case (null) {
         let adminUser : AdminUser = {
           id = 1;
@@ -306,6 +300,7 @@ actor {
     uploadDate : Text,
     expiryDate : Text,
     fileType : Text,
+    fileUrl : Text,
   ) : async Nat {
     if (not employees.containsKey(employeeId)) {
       Runtime.trap("Employee not found");
@@ -321,6 +316,7 @@ actor {
       uploadDate;
       expiryDate;
       fileType;
+      fileUrl;
     };
 
     documents.add(id, doc);
