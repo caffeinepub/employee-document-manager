@@ -10,6 +10,25 @@ import {
   Phone,
   UserPlus,
 } from "lucide-react";
+
+// Motoko returns variants as objects like { ok: null } or { invalidCredentials: null }
+// This helper resolves both the string enum format AND the object format
+function isLoginOk(result: unknown): boolean {
+  if (result === "ok") return true;
+  if (typeof result === "object" && result !== null && "ok" in result)
+    return true;
+  return false;
+}
+function isLoginInactive(result: unknown): boolean {
+  if (result === "accountInactive") return true;
+  if (
+    typeof result === "object" &&
+    result !== null &&
+    "accountInactive" in result
+  )
+    return true;
+  return false;
+}
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 
@@ -78,11 +97,12 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     setIsLoading(true);
     try {
       const normalizedEmail = email.trim().toLowerCase();
+
       if (mode === "signup") {
         // Register new user then auto-login
         await actor.addAdminUser(normalizedEmail, phone.trim(), password);
-        const success = await actor.login(normalizedEmail, password);
-        if (success) {
+        const loginResult = await actor.login(normalizedEmail, password);
+        if (isLoginOk(loginResult)) {
           sessionStorage.setItem("isLoggedIn", "true");
           sessionStorage.setItem("loginEmail", normalizedEmail);
           onLogin(normalizedEmail);
@@ -90,21 +110,26 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           setError("Account created but login failed. Please try signing in.");
         }
       } else {
-        // Existing login flow
-        const success = await actor.login(normalizedEmail, password);
-        if (success) {
+        // Login flow
+        const result = await actor.login(normalizedEmail, password);
+        if (isLoginOk(result)) {
           sessionStorage.setItem("isLoggedIn", "true");
           sessionStorage.setItem("loginEmail", normalizedEmail);
           onLogin(normalizedEmail);
+        } else if (isLoginInactive(result)) {
+          setError("Account is inactive. Contact your administrator.");
         } else {
-          setError("Invalid email or password. Please check your credentials.");
+          setError("Invalid email or password.");
         }
       }
-    } catch {
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
       setError(
         mode === "signup"
-          ? "Sign up failed. This email may already be registered."
-          : "Login failed. Please try again.",
+          ? msg.includes("already")
+            ? "This email is already registered."
+            : "Sign up failed. Please try again."
+          : "Invalid email or password.",
       );
     } finally {
       setIsLoading(false);

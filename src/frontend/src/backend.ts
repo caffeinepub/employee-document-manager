@@ -89,16 +89,13 @@ export class ExternalBlob {
         return this;
     }
 }
-export interface Document {
+export interface AdminUser {
     id: bigint;
     status: string;
-    title: string;
-    expiryDate: string;
-    fileType: string;
-    employeeId: bigint;
-    category: string;
-    uploadDate: string;
-    fileUrl: string;
+    password: string;
+    name: string;
+    email: string;
+    phone: string;
 }
 export interface Employee {
     id: bigint;
@@ -124,12 +121,21 @@ export interface Employee {
     employmentStatus: string;
     esiNumber: string;
 }
-export interface AdminUser {
+export interface Document {
     id: bigint;
     status: string;
-    password: string;
-    email: string;
-    phone: string;
+    title: string;
+    expiryDate: string;
+    fileType: string;
+    employeeId: bigint;
+    category: string;
+    uploadDate: string;
+    fileUrl: string;
+}
+export enum LoginResult {
+    ok = "ok",
+    accountInactive = "accountInactive",
+    invalidCredentials = "invalidCredentials"
 }
 export interface backendInterface {
     addAdminUser(email: string, phone: string, password: string): Promise<bigint>;
@@ -142,12 +148,12 @@ export interface backendInterface {
     getDocuments(): Promise<Array<Document>>;
     getDocumentsByEmployee(employeeId: bigint): Promise<Array<Document>>;
     getEmployees(): Promise<Array<Employee>>;
-    init(): Promise<void>;
-    login(email: string, password: string): Promise<boolean>;
+    login(email: string, password: string): Promise<LoginResult>;
     updateDocumentStatus(documentId: bigint, status: string): Promise<void>;
     updateEmployee(employeeId: bigint, name: string, fatherName: string, dateOfBirth: string, gender: string, aadhaarNumber: string, panNumber: string, mobileNumber: string, email: string, address: string, department: string, designation: string, dateOfJoining: string, salaryStructure: string, bankAccountDetails: string, ifscCode: string, pfNumber: string, esiNumber: string, photo: string, workName: string, workSite: string, employmentStatus: string): Promise<void>;
     updateEmployeeStatus(employeeId: bigint, status: string): Promise<void>;
 }
+import type { LoginResult as _LoginResult } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async addAdminUser(arg0: string, arg1: string, arg2: string): Promise<bigint> {
@@ -290,32 +296,18 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async init(): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.init();
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.init();
-            return result;
-        }
-    }
-    async login(arg0: string, arg1: string): Promise<boolean> {
+    async login(arg0: string, arg1: string): Promise<LoginResult> {
         if (this.processError) {
             try {
                 const result = await this.actor.login(arg0, arg1);
-                return result;
+                return from_candid_LoginResult_n1(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.login(arg0, arg1);
-            return result;
+            return from_candid_LoginResult_n1(this._uploadFile, this._downloadFile, result);
         }
     }
     async updateDocumentStatus(arg0: bigint, arg1: string): Promise<void> {
@@ -360,6 +352,18 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+}
+function from_candid_LoginResult_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _LoginResult): LoginResult {
+    return from_candid_variant_n2(_uploadFile, _downloadFile, value);
+}
+function from_candid_variant_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    ok: null;
+} | {
+    accountInactive: null;
+} | {
+    invalidCredentials: null;
+}): LoginResult {
+    return "ok" in value ? LoginResult.ok : "accountInactive" in value ? LoginResult.accountInactive : "invalidCredentials" in value ? LoginResult.invalidCredentials : value;
 }
 export interface CreateActorOptions {
     agent?: Agent;

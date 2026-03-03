@@ -1,24 +1,29 @@
 import { StatusBadge } from "@/components/StatusBadge";
+import { WorkWiseFullReportPanel } from "@/components/WorkWiseFullReportPanel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Document, Employee } from "@/hooks/useQueries";
 import {
-  formatDate,
   getAvatarColor,
+  getDesignationColor,
   getInitials,
   isRecentUpload,
+  normalizeEmploymentStatus,
 } from "@/lib/helpers";
+import { generateWorkWiseReport } from "@/lib/reportGenerator";
 import {
   ArrowRight,
   ChevronRight,
   Clock,
+  Download,
   FileText,
+  Loader2,
   TrendingUp,
   Upload,
   Users,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 interface DashboardProps {
   employees: Employee[];
@@ -33,6 +38,57 @@ export function Dashboard({
   isLoading,
   onNavigate,
 }: DashboardProps) {
+  const [summaryWorkGroupFilter, setSummaryWorkGroupFilter] = useState<
+    string | null
+  >(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  // Normalize statuses for summary
+  const normalizedEmployees = useMemo(
+    () =>
+      employees.map((e) => ({
+        ...e,
+        employmentStatus: normalizeEmploymentStatus(e.employmentStatus),
+      })),
+    [employees],
+  );
+
+  // Employees filtered by the summary work group filter
+  const summaryEmployees = useMemo(() => {
+    if (!summaryWorkGroupFilter) return normalizedEmployees;
+    return normalizedEmployees.filter(
+      (e) => e.workName === summaryWorkGroupFilter,
+    );
+  }, [normalizedEmployees, summaryWorkGroupFilter]);
+
+  // Designation breakdown from summaryEmployees
+  const designationSummary = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const e of summaryEmployees) {
+      const d = e.designation || "Other";
+      map.set(d, (map.get(d) ?? 0) + 1);
+    }
+    // Sort: known designations first, then alphabetical
+    const priority = ["Manager", "Supervisor", "Staff", "Security"];
+    return [...map.entries()].sort(([a], [b]) => {
+      const ai = priority.findIndex((p) => p.toLowerCase() === a.toLowerCase());
+      const bi = priority.findIndex((p) => p.toLowerCase() === b.toLowerCase());
+      if (ai !== -1 && bi !== -1) return ai - bi;
+      if (ai !== -1) return -1;
+      if (bi !== -1) return 1;
+      return a.localeCompare(b);
+    });
+  }, [summaryEmployees]);
+
+  // Work group list for the filter chips in summary
+  const summaryWorkGroups = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const e of normalizedEmployees) {
+      map.set(e.workName, (map.get(e.workName) ?? 0) + 1);
+    }
+    return [...map.entries()].sort((a, b) => b[1] - a[1]);
+  }, [normalizedEmployees]);
+
   const stats = useMemo(() => {
     const recentUploads = documents.filter((d) =>
       isRecentUpload(d.uploadDate),
@@ -98,13 +154,152 @@ export function Dashboard({
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-display font-bold text-slate-800">
-          Dashboard
-        </h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Welcome back! Here's what's happening today.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-display font-bold text-slate-800">
+            Dashboard
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Welcome back! Here's what's happening today.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={isDownloading || employees.length === 0}
+          data-ocid="dashboard.download_report_button"
+          className="flex-shrink-0 gap-2 border-emerald-300 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 hover:border-emerald-400 hover:text-emerald-800 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-150"
+          onClick={async () => {
+            setIsDownloading(true);
+            try {
+              generateWorkWiseReport(employees);
+            } finally {
+              setIsDownloading(false);
+            }
+          }}
+        >
+          {isDownloading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Download className="w-4 h-4" />
+          )}
+          <span className="hidden sm:inline">
+            {isDownloading ? "Generating…" : "Download Work-wise Report"}
+          </span>
+          <span className="sm:hidden">{isDownloading ? "…" : "Report"}</span>
+        </Button>
+      </div>
+
+      {/* Work-wise Full Report Panel */}
+      <WorkWiseFullReportPanel employees={employees} />
+
+      {/* Employee Summary by Designation */}
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div>
+            <h2 className="text-sm font-semibold text-slate-700">
+              Employee Summary
+            </h2>
+            <p className="text-xs text-slate-400">
+              Grouped by designation
+              {summaryWorkGroupFilter
+                ? ` · ${summaryWorkGroupFilter}`
+                : " · All Work Groups"}
+            </p>
+          </div>
+          {/* Work group filter chips */}
+          {!isLoading && summaryWorkGroups.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 sm:ml-auto">
+              <button
+                type="button"
+                onClick={() => setSummaryWorkGroupFilter(null)}
+                className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all duration-150 ${
+                  summaryWorkGroupFilter === null
+                    ? "bg-slate-700 text-white border-slate-700"
+                    : "bg-white text-slate-500 border-slate-200 hover:border-slate-400"
+                }`}
+              >
+                All
+              </button>
+              {summaryWorkGroups.map(([name]) => (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() =>
+                    setSummaryWorkGroupFilter(
+                      summaryWorkGroupFilter === name ? null : name,
+                    )
+                  }
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all duration-150 ${
+                    summaryWorkGroupFilter === name
+                      ? "bg-slate-700 text-white border-slate-700"
+                      : "bg-white text-slate-500 border-slate-200 hover:border-slate-400"
+                  }`}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Summary Cards */}
+        <div className="flex flex-wrap gap-3">
+          {isLoading ? (
+            ["sk1", "sk2", "sk3", "sk4", "sk5"].map((k) => (
+              <div
+                key={k}
+                className="flex-shrink-0 w-36 rounded-xl border border-border bg-white shadow-sm p-4"
+              >
+                <Skeleton className="h-5 w-16 mb-2 rounded-full" />
+                <Skeleton className="h-8 w-10 mb-1" />
+                <Skeleton className="h-3 w-20" />
+              </div>
+            ))
+          ) : (
+            <>
+              {/* Total card */}
+              <div className="flex-shrink-0 min-w-[128px] rounded-xl border border-border bg-white shadow-sm hover:shadow-md transition-shadow duration-200 p-4 flex flex-col gap-1.5">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 w-fit">
+                  Total
+                </span>
+                <p className="text-3xl font-display font-bold text-slate-800 leading-none mt-1">
+                  {summaryEmployees.length}
+                </p>
+                <p className="text-xs text-slate-400">Employees</p>
+              </div>
+
+              {/* Per-designation cards */}
+              {designationSummary.map(([designation, count]) => (
+                <div
+                  key={designation}
+                  className="flex-shrink-0 min-w-[128px] rounded-xl border border-border bg-white shadow-sm hover:shadow-md transition-shadow duration-200 p-4 flex flex-col gap-1.5"
+                >
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold w-fit ${getDesignationColor(designation)}`}
+                  >
+                    {designation}
+                  </span>
+                  <p className="text-3xl font-display font-bold text-slate-800 leading-none mt-1">
+                    {count}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    {count === 1 ? "Employee" : "Employees"}
+                  </p>
+                </div>
+              ))}
+
+              {designationSummary.length === 0 && (
+                <div className="flex items-center justify-center w-full py-8 text-sm text-slate-400">
+                  No employees found
+                  {summaryWorkGroupFilter
+                    ? ` in "${summaryWorkGroupFilter}"`
+                    : ""}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       {/* Stat Cards */}

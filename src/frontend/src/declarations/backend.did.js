@@ -12,6 +12,7 @@ export const AdminUser = IDL.Record({
   'id' : IDL.Nat,
   'status' : IDL.Text,
   'password' : IDL.Text,
+  'name' : IDL.Text,
   'email' : IDL.Text,
   'phone' : IDL.Text,
 });
@@ -49,6 +50,11 @@ export const Employee = IDL.Record({
   'department' : IDL.Text,
   'employmentStatus' : IDL.Text,
   'esiNumber' : IDL.Text,
+});
+export const LoginResult = IDL.Variant({
+  'ok' : IDL.Null,
+  'accountInactive' : IDL.Null,
+  'invalidCredentials' : IDL.Null,
 });
 
 export const idlService = IDL.Service({
@@ -105,8 +111,7 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'getEmployees' : IDL.Func([], [IDL.Vec(Employee)], ['query']),
-  'init' : IDL.Func([], [], []),
-  'login' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
+  'login' : IDL.Func([IDL.Text, IDL.Text], [LoginResult], []),
   'updateDocumentStatus' : IDL.Func([IDL.Nat, IDL.Text], [], []),
   'updateEmployee' : IDL.Func(
       [
@@ -146,6 +151,7 @@ export const idlFactory = ({ IDL }) => {
     'id' : IDL.Nat,
     'status' : IDL.Text,
     'password' : IDL.Text,
+    'name' : IDL.Text,
     'email' : IDL.Text,
     'phone' : IDL.Text,
   });
@@ -183,6 +189,11 @@ export const idlFactory = ({ IDL }) => {
     'department' : IDL.Text,
     'employmentStatus' : IDL.Text,
     'esiNumber' : IDL.Text,
+  });
+  const LoginResult = IDL.Variant({
+    'ok' : IDL.Null,
+    'accountInactive' : IDL.Null,
+    'invalidCredentials' : IDL.Null,
   });
   
   return IDL.Service({
@@ -239,8 +250,7 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getEmployees' : IDL.Func([], [IDL.Vec(Employee)], ['query']),
-    'init' : IDL.Func([], [], []),
-    'login' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
+    'login' : IDL.Func([IDL.Text, IDL.Text], [LoginResult], []),
     'updateDocumentStatus' : IDL.Func([IDL.Nat, IDL.Text], [], []),
     'updateEmployee' : IDL.Func(
         [

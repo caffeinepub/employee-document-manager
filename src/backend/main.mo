@@ -1,12 +1,12 @@
-import Order "mo:core/Order";
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
-import List "mo:core/List";
 import Iter "mo:core/Iter";
-import Text "mo:core/Text";
 import Runtime "mo:core/Runtime";
+import Text "mo:core/Text";
+import Array "mo:core/Array";
 
 
+// Use migration module for upgrades
 
 actor {
   type Employee = {
@@ -51,106 +51,134 @@ actor {
     email : Text;
     phone : Text;
     password : Text;
+    name : Text;
     status : Text;
   };
 
-  module Employee {
-    public func compare(a : Employee, b : Employee) : Order.Order {
-      Nat.compare(a.id, b.id);
-    };
+  type LoginResult = {
+    #ok;
+    #invalidCredentials;
+    #accountInactive;
   };
 
-  module Document {
-    public func compare(a : Document, b : Document) : Order.Order {
-      Nat.compare(a.id, b.id);
-    };
+  let rootAdminId = 1;
+  let rootAdminEmail = "gokul.blackcatsolution@gmail.com";
+  let rootAdminPhone = "9999999999";
+  let rootAdminPassword = "Admin@1234";
+  let rootAdminName = "Gokul";
+
+  stable var nextEmployeeId = 1;
+  stable var nextDocumentId = 1;
+  stable var nextAdminUserId = 2; // Start at 2 to prevent overwriting root admin id
+
+  stable var employees : [(Nat, Employee)] = [];
+  stable var documents : [(Nat, Document)] = [];
+  stable var adminUsers : [(Nat, AdminUser)] = [];
+
+  var employeesMap : Map.Map<Nat, Employee> = Map.empty<Nat, Employee>();
+  var documentsMap : Map.Map<Nat, Document> = Map.empty<Nat, Document>();
+  var adminUsersMap : Map.Map<Nat, AdminUser> = Map.empty<Nat, AdminUser>();
+
+  private func syncStableWithMaps() {
+    employees := employeesMap.toArray();
+    documents := documentsMap.toArray();
+    adminUsers := adminUsersMap.toArray();
   };
 
-  module AdminUser {
-    public func compare(a : AdminUser, b : AdminUser) : Order.Order {
-      Nat.compare(a.id, b.id);
-    };
+  private func initializeMapFromStable<T>(
+    stableArray : [(Nat, T)],
+    map : Map.Map<Nat, T>,
+  ) : Map.Map<Nat, T> {
+    Map.fromIter(stableArray.values());
   };
 
-  var nextEmployeeId = 1;
-  var nextDocumentId = 1;
-  var nextAdminUserId = 1;
-
-  let employees = Map.empty<Nat, Employee>();
-  let documents = Map.empty<Nat, Document>();
-  let adminUsers = Map.empty<Nat, AdminUser>();
-
-  public shared ({ caller }) func init() : async () {
-    switch (adminUsers.values().find(func(user) { user.email == "gokul.blackcatsolution@gmail.com" })) {
+  private func ensureRootAdmin() {
+    switch (adminUsersMap.get(rootAdminId)) {
       case (null) {
-        let adminUser : AdminUser = {
-          id = 1;
-          email = "gokul.blackcatsolution@gmail.com";
-          phone = "9999999999";
-          password = "Admin@1234";
+        let rootAdmin : AdminUser = {
+          id = rootAdminId;
+          email = rootAdminEmail;
+          phone = rootAdminPhone;
+          password = rootAdminPassword;
+          name = rootAdminName;
           status = "active";
         };
-        adminUsers.add(adminUser.id, adminUser);
-        nextAdminUserId := 2;
+        adminUsersMap.add(rootAdminId, rootAdmin);
       };
-      case (_) {};
+      case (?_) { };
     };
   };
 
-  // Admin user functions
+  public shared ({ caller }) func login(email : Text, password : Text) : async LoginResult {
+    let normalizedEmail = email.toLower();
+
+    let user = adminUsersMap.values().find(
+      func(u) { u.email.toLower() == normalizedEmail }
+    );
+
+    switch (user) {
+      case (null) { #invalidCredentials };
+      case (?user) {
+        if (user.password == password) {
+          if (user.status == "active") {
+            #ok;
+          } else {
+            #accountInactive;
+          };
+        } else {
+          #invalidCredentials;
+        };
+      };
+    };
+  };
+
   public shared ({ caller }) func addAdminUser(email : Text, phone : Text, password : Text) : async Nat {
-    let id = nextAdminUserId;
-    let adminUser : AdminUser = {
-      id;
-      email;
+    let normalizedEmail = email.toLower();
+
+    let existingUser = adminUsersMap.values().find(
+      func(u) { u.email.toLower() == normalizedEmail }
+    );
+
+    if (existingUser != null) {
+      Runtime.trap("Admin already exists");
+    };
+
+    let newUser : AdminUser = {
+      id = nextAdminUserId;
+      email = normalizedEmail;
       phone;
       password;
+      name = "";
       status = "active";
     };
-    adminUsers.add(id, adminUser);
+
+    adminUsersMap.add(nextAdminUserId, newUser);
     nextAdminUserId += 1;
-    id;
+    syncStableWithMaps();
+    newUser.id;
   };
 
   public query ({ caller }) func getAdminUsers() : async [AdminUser] {
-    adminUsers.values().toArray().sort();
+    adminUsersMap.values().toArray();
   };
 
   public shared ({ caller }) func deleteAdminUser(id : Nat) : async () {
-    switch (adminUsers.get(id)) {
+    switch (adminUsersMap.get(id)) {
       case (null) {
         Runtime.trap("Admin not found");
       };
       case (?adminUser) {
-        if (adminUser.email == "gokul.blackcatsolution@gmail.com") {
-          Runtime.trap("Cannot delete super admin");
+        if (adminUser.email == rootAdminEmail) {
+          Runtime.trap("Cannot delete root admin");
         };
-        adminUsers.remove(id);
+        adminUsersMap.remove(id);
+        syncStableWithMaps();
       };
     };
   };
 
-  public shared ({ caller }) func login(email : Text, password : Text) : async Bool {
-    adminUsers.values().any(
-      func(adminUser) {
-        adminUser.email == email and adminUser.password == password and adminUser.status == "active"
-      }
-    );
-  };
-
   public query ({ caller }) func getEmployees() : async [Employee] {
-    employees.values().toArray().sort();
-  };
-
-  public query ({ caller }) func getDocuments() : async [Document] {
-    documents.values().toArray().sort();
-  };
-
-  public query ({ caller }) func getDocumentsByEmployee(employeeId : Nat) : async [Document] {
-    let filteredDocuments = documents.values().toArray().filter(
-      func(doc) { doc.employeeId == employeeId }
-    );
-    filteredDocuments.sort();
+    employeesMap.values().toArray();
   };
 
   public shared ({ caller }) func addEmployee(
@@ -177,7 +205,7 @@ actor {
     employmentStatus : Text,
   ) : async Nat {
     let id = nextEmployeeId;
-    let employee : Employee = {
+    let newEmployee = {
       id;
       name;
       fatherName;
@@ -201,8 +229,9 @@ actor {
       workSite;
       employmentStatus;
     };
-    employees.add(id, employee);
-    nextEmployeeId := nextEmployeeId + 1;
+    employeesMap.add(id, newEmployee);
+    nextEmployeeId += 1;
+    syncStableWithMaps();
     id;
   };
 
@@ -230,10 +259,8 @@ actor {
     workSite : Text,
     employmentStatus : Text,
   ) : async () {
-    let employee = switch (employees.get(employeeId)) {
-      case (null) {
-        Runtime.trap("Employee does not exist");
-      };
+    let _employee = switch (employeesMap.get(employeeId)) {
+      case (null) { Runtime.trap("Employee does not exist") };
       case (?existing) { existing };
     };
 
@@ -262,34 +289,48 @@ actor {
       employmentStatus;
     };
 
-    employees.add(employeeId, updatedEmployee);
+    employeesMap.add(employeeId, updatedEmployee);
+    syncStableWithMaps();
   };
 
   public shared ({ caller }) func deleteEmployee(employeeId : Nat) : async () {
-    let employee = switch (employees.get(employeeId)) {
+    switch (employeesMap.get(employeeId)) {
       case (null) {
         Runtime.trap("Employee does not exist");
       };
-      case (?existing) { existing };
-    };
+      case (?_existing) {
+        employeesMap.remove(employeeId);
+        syncStableWithMaps();
 
-    employees.remove(employeeId);
-
-    let docsToRemove = documents.entries().filter(func((id, doc)) { doc.employeeId == employeeId }).toArray();
-    for ((id, doc) in docsToRemove.values()) {
-      documents.remove(id);
+        let docsToRemove = documentsMap.entries().filter(func((id, doc)) { doc.employeeId == employeeId }).toArray();
+        for ((id, _doc) in docsToRemove.values()) {
+          documentsMap.remove(id);
+        };
+        syncStableWithMaps();
+      };
     };
   };
 
   public shared ({ caller }) func updateEmployeeStatus(employeeId : Nat, status : Text) : async () {
-    let employee = switch (employees.get(employeeId)) {
+    let employee = switch (employeesMap.get(employeeId)) {
       case (null) {
         Runtime.trap("Employee does not exist");
       };
       case (?existingEmployee) { existingEmployee };
     };
     let updatedEmployee = { employee with employmentStatus = status };
-    employees.add(employeeId, updatedEmployee);
+    employeesMap.add(employeeId, updatedEmployee);
+    syncStableWithMaps();
+  };
+
+  public query ({ caller }) func getDocuments() : async [Document] {
+    documentsMap.values().toArray();
+  };
+
+  public query ({ caller }) func getDocumentsByEmployee(employeeId : Nat) : async [Document] {
+    documentsMap.values().toArray().filter(
+      func(d) { d.employeeId == employeeId }
+    );
   };
 
   public shared ({ caller }) func addDocument(
@@ -302,7 +343,7 @@ actor {
     fileType : Text,
     fileUrl : Text,
   ) : async Nat {
-    if (not employees.containsKey(employeeId)) {
+    if (not employeesMap.containsKey(employeeId)) {
       Runtime.trap("Employee not found");
     };
 
@@ -319,13 +360,14 @@ actor {
       fileUrl;
     };
 
-    documents.add(id, doc);
-    nextDocumentId := nextDocumentId + 1;
+    documentsMap.add(id, doc);
+    nextDocumentId += 1;
+    syncStableWithMaps();
     id;
   };
 
   public shared ({ caller }) func updateDocumentStatus(documentId : Nat, status : Text) : async () {
-    let doc = switch (documents.get(documentId)) {
+    let doc = switch (documentsMap.get(documentId)) {
       case (null) {
         Runtime.trap("Document does not exist");
       };
@@ -333,17 +375,35 @@ actor {
     };
 
     let updatedDoc = { doc with status };
-    documents.add(documentId, updatedDoc);
+    documentsMap.add(documentId, updatedDoc);
+    syncStableWithMaps();
   };
 
   public shared ({ caller }) func deleteDocument(documentId : Nat) : async () {
-    let doc = switch (documents.get(documentId)) {
+    switch (documentsMap.get(documentId)) {
       case (null) {
         Runtime.trap("Document does not exist");
       };
-      case (?existing) { existing };
+      case (?_existing) {
+        documentsMap.remove(documentId);
+        syncStableWithMaps();
+      };
     };
+  };
 
-    documents.remove(documentId);
+  system func preupgrade() {
+    employees := employeesMap.toArray();
+    documents := documentsMap.toArray();
+    adminUsers := adminUsersMap.toArray();
+  };
+
+  system func postupgrade() {
+    employeesMap := initializeMapFromStable(employees, employeesMap);
+    documentsMap := initializeMapFromStable(documents, documentsMap);
+    adminUsersMap := initializeMapFromStable(adminUsers, adminUsersMap);
+    employees := [];
+    documents := [];
+    adminUsers := [];
+    ensureRootAdmin();
   };
 };

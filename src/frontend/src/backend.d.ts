@@ -7,16 +7,13 @@ export interface None {
     __kind__: "None";
 }
 export type Option<T> = Some<T> | None;
-export interface Document {
+export interface AdminUser {
     id: bigint;
     status: string;
-    title: string;
-    expiryDate: string;
-    fileType: string;
-    employeeId: bigint;
-    category: string;
-    uploadDate: string;
-    fileUrl: string;
+    password: string;
+    name: string;
+    email: string;
+    phone: string;
 }
 export interface Employee {
     id: bigint;
@@ -42,12 +39,21 @@ export interface Employee {
     employmentStatus: string;
     esiNumber: string;
 }
-export interface AdminUser {
+export interface Document {
     id: bigint;
     status: string;
-    password: string;
-    email: string;
-    phone: string;
+    title: string;
+    expiryDate: string;
+    fileType: string;
+    employeeId: bigint;
+    category: string;
+    uploadDate: string;
+    fileUrl: string;
+}
+export enum LoginResult {
+    ok = "ok",
+    accountInactive = "accountInactive",
+    invalidCredentials = "invalidCredentials"
 }
 export interface backendInterface {
     addAdminUser(email: string, phone: string, password: string): Promise<bigint>;
@@ -60,8 +66,7 @@ export interface backendInterface {
     getDocuments(): Promise<Array<Document>>;
     getDocumentsByEmployee(employeeId: bigint): Promise<Array<Document>>;
     getEmployees(): Promise<Array<Employee>>;
-    init(): Promise<void>;
-    login(email: string, password: string): Promise<boolean>;
+    login(email: string, password: string): Promise<LoginResult>;
     updateDocumentStatus(documentId: bigint, status: string): Promise<void>;
     updateEmployee(employeeId: bigint, name: string, fatherName: string, dateOfBirth: string, gender: string, aadhaarNumber: string, panNumber: string, mobileNumber: string, email: string, address: string, department: string, designation: string, dateOfJoining: string, salaryStructure: string, bankAccountDetails: string, ifscCode: string, pfNumber: string, esiNumber: string, photo: string, workName: string, workSite: string, employmentStatus: string): Promise<void>;
     updateEmployeeStatus(employeeId: bigint, status: string): Promise<void>;

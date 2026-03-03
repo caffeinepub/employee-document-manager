@@ -14,6 +14,7 @@ export interface AdminUser {
   'id' : bigint,
   'status' : string,
   'password' : string,
+  'name' : string,
   'email' : string,
   'phone' : string,
 }
@@ -52,6 +53,9 @@ export interface Employee {
   'employmentStatus' : string,
   'esiNumber' : string,
 }
+export type LoginResult = { 'ok' : null } |
+  { 'accountInactive' : null } |
+  { 'invalidCredentials' : null };
 export interface _SERVICE {
   'addAdminUser' : ActorMethod<[string, string, string], bigint>,
   'addDocument' : ActorMethod<
@@ -91,8 +95,7 @@ export interface _SERVICE {
   'getDocuments' : ActorMethod<[], Array<Document>>,
   'getDocumentsByEmployee' : ActorMethod<[bigint], Array<Document>>,
   'getEmployees' : ActorMethod<[], Array<Employee>>,
-  'init' : ActorMethod<[], undefined>,
-  'login' : ActorMethod<[string, string], boolean>,
+  'login' : ActorMethod<[string, string], LoginResult>,
   'updateDocumentStatus' : ActorMethod<[bigint, string], undefined>,
   'updateEmployee' : ActorMethod<
     [

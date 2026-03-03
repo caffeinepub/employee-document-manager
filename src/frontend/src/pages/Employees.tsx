@@ -57,11 +57,17 @@ export function Employees({
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
   const [workNameFilter, setWorkNameFilter] = useState<string | null>(null);
+  const [siteFilter, setSiteFilter] = useState<string | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
     null,
   );
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+
+  const handleWorkNameFilter = (name: string | null) => {
+    setWorkNameFilter(name);
+    setSiteFilter(null);
+  };
 
   // Normalize status: "Active" -> "Working"
   const normalizedEmployees = useMemo(
@@ -80,6 +86,7 @@ export function Employees({
         statusFilter === "All" || e.employmentStatus === statusFilter;
       if (!matchesStatus) return false;
       if (workNameFilter && e.workName !== workNameFilter) return false;
+      if (siteFilter && e.workSite !== siteFilter) return false;
       if (!q) return true;
       return (
         e.name.toLowerCase().includes(q) ||
@@ -88,7 +95,7 @@ export function Employees({
         e.workSite.toLowerCase().includes(q)
       );
     });
-  }, [normalizedEmployees, search, statusFilter, workNameFilter]);
+  }, [normalizedEmployees, search, statusFilter, workNameFilter, siteFilter]);
 
   const getDocCount = (id: bigint) =>
     documents.filter((d) => d.employeeId === id).length;
@@ -222,7 +229,8 @@ export function Employees({
             <div className="flex flex-col gap-1">
               <button
                 type="button"
-                onClick={() => setWorkNameFilter(null)}
+                onClick={() => handleWorkNameFilter(null)}
+                data-ocid="employees.all_groups.button"
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-150 ${
                   workNameFilter === null
                     ? "bg-slate-800 text-white border-slate-800"
@@ -237,10 +245,10 @@ export function Employees({
               const isActive = workNameFilter === name;
               const sites = workNameSites.get(name) ?? [];
               return (
-                <div key={name} className="flex flex-col gap-1">
+                <div key={name} className="flex flex-col gap-2">
                   <button
                     type="button"
-                    onClick={() => setWorkNameFilter(isActive ? null : name)}
+                    onClick={() => handleWorkNameFilter(isActive ? null : name)}
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-150 ${
                       isActive
                         ? `ring-2 ring-offset-1 ring-slate-400 ${colorClass}`
@@ -253,22 +261,50 @@ export function Employees({
                       {count}
                     </span>
                   </button>
-                  {sites.length > 0 && (
-                    <div className="flex flex-wrap gap-1 pl-1">
-                      <span className="text-[10px] text-slate-400 font-medium self-center">
-                        Under Sites:
+                  {isActive && sites.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 pl-1 items-center">
+                      <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide self-center mr-0.5">
+                        Sites:
                       </span>
-                      {sites.map(({ site, count }) => (
-                        <span
+                      {/* All Sites pill */}
+                      <button
+                        key="all-sites"
+                        type="button"
+                        onClick={() => setSiteFilter(null)}
+                        data-ocid="employees.all_sites.button"
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-all duration-150 ${
+                          siteFilter === null
+                            ? "bg-primary text-primary-foreground border-primary ring-2 ring-primary/20"
+                            : "bg-white text-slate-600 border-slate-200 hover:border-primary/40 hover:text-primary"
+                        }`}
+                      >
+                        All Sites
+                      </button>
+                      {/* Individual site pills */}
+                      {sites.map(({ site, count: siteCount }, index) => (
+                        <button
                           key={site}
-                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-500 border border-slate-200"
+                          type="button"
+                          onClick={() => setSiteFilter(site)}
+                          data-ocid={`employees.site_filter.button.${index + 1}`}
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-all duration-150 ${
+                            siteFilter === site
+                              ? "bg-primary text-primary-foreground border-primary ring-2 ring-primary/20"
+                              : "bg-white text-slate-600 border-slate-200 hover:border-primary/40 hover:text-primary"
+                          }`}
                         >
                           <MapPin className="w-2.5 h-2.5 flex-shrink-0" />
                           {site}
-                          <span className="ml-0.5 px-1 py-0 rounded-full bg-primary/10 text-primary font-bold text-[9px] leading-4 min-w-[16px] text-center">
-                            {count}
+                          <span
+                            className={`ml-0.5 px-1.5 py-0 rounded-full text-[9px] font-bold leading-4 min-w-[16px] text-center ${
+                              siteFilter === site
+                                ? "bg-white/20 text-white"
+                                : "bg-primary/10 text-primary"
+                            }`}
+                          >
+                            {siteCount}
                           </span>
-                        </span>
+                        </button>
                       ))}
                     </div>
                   )}
@@ -306,13 +342,23 @@ export function Employees({
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16">
+        <div className="text-center py-16" data-ocid="employees.empty_state">
           <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
-            <Search className="w-5 h-5 text-slate-400" />
+            {siteFilter ? (
+              <MapPin className="w-5 h-5 text-slate-400" />
+            ) : (
+              <Search className="w-5 h-5 text-slate-400" />
+            )}
           </div>
-          <p className="text-slate-500 font-medium">No employees found</p>
+          <p className="text-slate-500 font-medium">
+            {siteFilter
+              ? "No employees found in this site."
+              : "No employees found"}
+          </p>
           <p className="text-sm text-slate-400 mt-1">
-            Try a different search term or filter
+            {siteFilter
+              ? `No employees are assigned to "${siteFilter}"`
+              : "Try a different search term or filter"}
           </p>
         </div>
       ) : (
